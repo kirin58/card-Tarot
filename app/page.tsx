@@ -63,7 +63,17 @@ function makeMosaic(columns = 17, rows = 23) {
 }
 
 const mosaic = makeMosaic();
-const deckMosaic = makeMosaic(10, 15);
+const deckMosaic = makeMosaic(16, 23);
+const glassBands = Array.from({ length: 5 }, (_, band) =>
+  deckMosaic.filter((pane) => pane.band === band).map(({ points }) => "M" + points + "Z").join(""),
+);
+const facetHighlights = deckMosaic.filter((_, index) => index % 4 === 2).map(({ points }) => {
+  const [first, second, opposite] = points.split(" ").map((pair) => pair.split(",").map(Number));
+  const inset = (start = [0, 0], end = [0, 0]) => start.map((value, axis) =>
+    (value * .76 + end[axis] * .13 + opposite[axis] * .11).toFixed(1),
+  ).join(",");
+  return "M" + inset(first, second) + "L" + inset(second, first);
+}).join("");
 
 function Glass({ d = "", fill = "#fff", width = 2.4 }) {
   return <path d={d} fill={fill} stroke={lead} strokeWidth={width} strokeLinejoin="round" />;
@@ -530,6 +540,8 @@ function SuitGlyph({ group = 1, color = "#f5c686", light = "#ffecc7" }) {
       <Glass d="M-8 38-5-10-8-25 0-39 8-25 5-10 8 38Z" fill={color} width={2.1} />
       <Glass d="M0-36 4-24 1-17 4 34H0Z" fill={light} width={1} />
       <Glass d="M-1-8Q-12-8-15-20Q-4-19-1-8ZM2 4Q14 5 17-8Q5-7 2 4Z" fill="#85a878" width={1.8} />
+      <Glass d="M-5 16 5 10 6 16-5 22ZM-6 26 7 20 7 25-6 32Z" fill="#efc391" width={.95} />
+      <path d="M-12-16-4-10M13-4 5 1M0-32 1-24" fill="none" stroke={light} strokeWidth=".9" opacity=".7" />
     </g>
   );
   if (group === 2) return (
@@ -537,13 +549,19 @@ function SuitGlyph({ group = 1, color = "#f5c686", light = "#ffecc7" }) {
       <Glass d="M-13 28-7 21-4 9Q-18 3-19-16L-17-26H17L19-16Q18 3 4 9L7 21 13 28Z" fill={color} width={2.1} />
       <Glass d="M-18-17Q0-10 18-17L16-9Q0-1-16-9Z" fill={light} width={1.4} />
       <Glass d="M-5-4 0-8 5-4 0 2Z" fill="#ffdf94" width={1.1} />
+      <Glass d="M-16-24Q0-20 16-24L15-20Q0-16-15-20Z" fill="#fff3c1" width={1.1} />
+      <Glass d="M-3 10 1 11 3 22 10 26H-8L-4 22Z" fill={light} width={1.1} />
+      <path d="M-12-15Q-10-8-7-5M9-14Q9-8 6-6" fill="none" stroke="#98697b" strokeWidth="1.25" strokeLinecap="round" />
     </g>
   );
   if (group === 3) return (
     <g>
       <Glass d="M0-39 7-25 4 13H-4L-7-25Z" fill={light} width={2.1} />
       <Glass d="M-12 13Q-5 17 0 13Q5 17 12 13L10 22Q5 20 3 23V31L6 35 0 40-6 35-3 31V23Q-5 20-10 22Z" fill={color} width={2.1} />
+      <Glass d="M0-37 5-24 2 11H0Z" fill="#b1a7bd" width={1} />
       <path d="M0-33V12" stroke={lead} strokeWidth="1.1" />
+      <Glass d="M-4 16 0 13 4 16 0 20Z" fill="#f5d393" width={.85} />
+      <path d="M-2 25l4 3m-4 1 4 3" fill="none" stroke="#e6c2a2" strokeWidth=".9" />
     </g>
   );
   return (
@@ -552,6 +570,8 @@ function SuitGlyph({ group = 1, color = "#f5c686", light = "#ffecc7" }) {
       <circle r="18.6" fill="#717754" stroke={lead} strokeWidth="1.2" />
       <Glass d="M0-17 4-5 17-5 7 3 11 15 0 8-11 15-7 3-17-5-4-5Z" fill={light} width={1.5} />
       <path d="M0-17 0 8M-17-5 7 3M17-5-7 3" stroke="#8e7548" strokeWidth=".8" />
+      <circle r="20.8" fill="none" stroke={light} strokeWidth="1.05" strokeDasharray="1.8 3.35" opacity=".84" />
+      <circle r="2.8" fill="#f4cf8b" stroke={lead} strokeWidth="1.05" />
     </g>
   );
 }
@@ -626,6 +646,8 @@ function MountedKnight({ group = 1, tint = minorSuits[0].panes }) {
         fill={tint[4]} width={4.7} />
       <Glass d="M29 31Q54 23 79 31L75 60Q70 79 54 89Q37 78 33 60Z"
         fill={tint[1]} width={2.8} />
+      <path d="M24 23Q54 15 83 23M25 58Q31 79 46 91M82 31 76 54M72 77 66 86" fill="none" stroke="#f2d8a7" strokeWidth="1.15" opacity=".9" />
+      <path d="M-12-55Q1-74 20-78m-22 65q9-6 17-2m-23 21 11 8m-73 30 20-3" fill="none" stroke="#f1d9bc" strokeWidth="1.12" opacity=".82" />
       <Glass d="M54 26Q68 27 79 31L75 60Q70 79 54 89Z"
         fill={tint[2]} width={1.7} />
       <g transform="translate(54 55) scale(.57)">
@@ -671,6 +693,7 @@ const poses = {
   walk: { arms: [[-21, -77, -36, -65], [23, -76, 37, -88]], feet: [-32, 26], lean: 7, drop: 0 },
   offer: { arms: [[-25, -76, -20, -59], [35, -85, 57, -93]], feet: [-13, 19], lean: 3, drop: 0 },
   raise: { arms: [[-30, -116, -46, -140], [34, -106, 51, -127]], feet: [-21, 20], lean: 0, drop: 0 },
+  toast: { arms: [[-27, -109, -44, -128], [23, -119, 5, -139]], feet: [-21, 20], lean: 0, drop: 0 },
   point: { arms: [[-22, -73, -21, -56], [36, -105, 62, -123]], feet: [-12, 18], lean: 0, drop: 0 },
   hold: { arms: [[-28, -83, -3, -73], [28, -84, 6, -76]], feet: [-12, 13], lean: 0, drop: 0 },
   seated: { arms: [[-30, -75, -23, -58], [30, -74, 23, -58]], feet: [-20, 28], lean: 0, drop: 28 },
@@ -684,53 +707,250 @@ const poses = {
   pray: { arms: [[-25, -80, -3, -105], [26, -80, 3, -105]], feet: [-12, 13], lean: 0, drop: 0 },
 };
 
+function PortraitFeatures({ skin = "#edc2aa", shade = "#c88886", hair = "#6e465b", eyes = "open", beard = false }) {
+  return (
+    <>
+      <Glass d="M-14-6Q-14-18 0-19Q14-18 14-6L12 5Q10 13 0 17Q-10 13-12 5Z" fill={skin} width={2.35} />
+      <Glass d="M-14-7-9-4Q-10 8-1 16L-6 14Q-13 10-14-7ZM14-7 9-4Q10 8 1 16L6 14Q13 10 14-7Z" fill={shade} width={1.05} />
+      <Glass d="M-15-4Q-17-14-10-20Q-4-24 0-20Q5-24 11-20Q18-15 15-4L11-8Q5-8 0-14Q-4-9-11-8Z" fill={hair} width={1.85} />
+      <path d="M-11-15Q-6-21-1-19M2-19Q7-20 11-15" stroke="#f3dab2" strokeWidth=".95" opacity=".44" fill="none" />
+      {beard && <>
+        <Glass d="M-12 5Q-7 9-3 7L0 8 3 7Q7 9 12 5L10 13 5 17 0 21-6 17-10 13Z" fill={hair} width={1.45} />
+        <path d="M-7 11-4 16m11-5-3 5M0 12v6" stroke="#f2d7b4" strokeWidth=".8" opacity=".55" fill="none" />
+      </>}
+      {eyes === "blind" ? <Glass d="M-13-6 13-6 12 0Q0 3-12 0Z" fill="#e1d7e5" width={1.6} /> :
+        <g fill="none" strokeLinecap="round">
+          <path d="M-10-4Q-7-6-3-4M3-4Q7-6 10-4" stroke={shade} strokeWidth="1.12" />
+          <path d={eyes === "closed" ? "M-9-.5Q-6 1-3-.4M3-.4Q6 1 9-.5" : "M-9-.5Q-6-2-3-.4M3-.4Q6-2 9-.5"} stroke="#3b293f" strokeWidth="1.24" />
+          {eyes === "open" && <path d="M-6-.8v1M6-.8v1" stroke="#3b293f" strokeWidth="1.5" />}
+        </g>
+      }
+      <path d="M0-2-1.5 5 1 5.6M-3 9Q0 10.1 3 9" fill="none" stroke={shade} strokeWidth="1.28" strokeLinecap="round" />
+    </>
+  );
+}
+
+function Face({ skin = "#edc2aa", shade = "#c88886", hair = "#6e465b", metal = "#f4cb8e", hat = "hair", eyes = "open", beard = false, frontal = false }) {
+  return (
+    <g transform="translate(0 -132)">
+      {frontal ? <PortraitFeatures skin={skin} shade={shade} hair={hair} eyes={eyes} beard={beard} /> : <>
+      <Glass d="M-13-4Q-14-14-4-17Q7-20 13-11Q17-6 15 1L18.5 5 14 7Q12 13 6 16Q1 16-5 12L-11 7Z"
+        fill={skin} width={2.25} />
+      <Glass d="M-12-6Q-7-9-5-2L-6 4Q-4 10 6 15L2 15-5 12-11 7Z" fill={shade} width={1.15} />
+      <path d="M6-5Q7 0 11 4L8 6M1 10Q5 11 9 9" stroke={shade} strokeWidth="1.35" fill="none" strokeLinecap="round" />
+      <Glass d="M-13-4Q-17-12-8-18Q0-23 9-18Q16-16 16-8L10-10 5-13-1-8-8-6-10 5-15 1Z"
+        fill={hair} width={2.1} />
+      <path d="M-11-11Q-7-17 2-18M6-17 12-13" fill="none" stroke={metal} strokeWidth="1.05" strokeLinecap="round" opacity=".5" />
+      {beard && (
+        <Glass d="M-8 5Q-6 8-2 9L3 7 7 8.5 13 5Q12 12 8 15L5 21-2 17-8 12Z" fill={hair} width={1.45} />
+      )}
+      {eyes === "blind" ? (
+        <Glass d="M-12-4 15-5 15 0 11 3-12 2Z" fill="#ddd1e6" width={1.65} />
+      ) : (
+        <g fill="none" strokeLinecap="round">
+          <path d="M-5-5Q-1-7 3-5M7-6Q11-7 13-5" stroke="#744b5e" strokeWidth="1.05" />
+          <path d={eyes === "closed" ? "M-5-1Q-1 1 3-1M7-2Q10 0 13-2" : "M-5-1Q-1-3 3-1M7-2Q10-4 13-2"} stroke="#382336" strokeWidth="1.15" />
+          {eyes === "open" && <path d="M-.6-1.4v1M10-2.5v1" stroke="#342239" strokeWidth="1.65" />}
+        </g>
+      )}
+      </>}
+      {hat === "hood" && <>
+        <Glass d="M-21 11Q-24-18-11-23Q0-29 13-19L18-9 12-10Q3-19-6-12Q-14-6-12 8L-5 16-16 18Z" fill={metal} width={2.2} />
+        <path d="M-17 10Q-20-8-11-16Q1-23 10-18" fill="none" stroke="#efcb98" strokeWidth="1.1" opacity=".68" />
+      </>}
+      {hat === "cap" && (
+        <Glass d="M-16-11Q-14-21 1-23Q11-25 16-17L24-12 14-10-3-12-14-6Z" fill={metal} width={2.1} />
+      )}
+      {hat === "flowers" && <>
+        <path d="M-15-12Q0-24 15-12" fill="none" stroke={lead} strokeWidth="4" />
+        <Flower x={-10} y={-17} size={.36} hue={4} count={5} />
+        <Flower x={1} y={-20} size={.43} hue={3} count={7} />
+        <Flower x={11} y={-16} size={.34} hue={0} count={5} />
+      </>}
+      {hat === "crown" && <>
+        <Glass d="M-15-11-18-24-7-20 0-28 8-20 18-24 15-11Q0-7-15-11Z" fill={metal} width={2.2} />
+        <Glass d="M-13-14Q0-18 13-14L12-10Q0-8-12-10Z" fill="#e2ad77" width={1.4} />
+        <Glass d="M0-22 4-17 0-13-4-17Z" fill="#a9587b" width={1.2} />
+      </>}
+      {hat === "mitre" && <>
+        <Glass d="M-14-11-15-24 1-40 15-24 14-12Q0-8-14-11Z" fill="#ead3aa" width={2.5} />
+        <path d="M1-34V-15m-6-12h12" stroke="#9a6168" strokeWidth="2.3" />
+      </>}
+      {hat === "wrap" && (
+        <Glass d="M-14-9-14-15Q-10-21-5-19L16-16 16-10Q0-15-14-9Z" fill="#eadad4" width={1.9} />
+      )}
+      {!beard && hat !== "hood" && <circle cx="-8.4" cy="6" r="1.85" fill="#e8bd87" stroke={lead} strokeWidth=".85" />}
+    </g>
+  );
+}
+
+function Sleeve({
+  start = -17, elbowX = -27, elbowY = -77, handX = -30, handY = -57,
+  cloth = "#ad6384", shade = "#704769", lining = "#e5afab", skin = "#edc2aa",
+}) {
+  const shoulderY = -103;
+  const length = Math.hypot(handX - elbowX, handY - elbowY) || 1;
+  const ux = (handX - elbowX) / length;
+  const uy = (handY - elbowY) / length;
+  const shoulderLength = Math.hypot(elbowX - start, elbowY - shoulderY) || 1;
+  const sx = (elbowY - shoulderY) / shoulderLength;
+  const sy = (elbowX - start) / shoulderLength;
+  const wristX = handX - ux * 3;
+  const wristY = handY - uy * 3;
+  const point = (x = 0, y = 0) => x.toFixed(2) + "," + y.toFixed(2);
+  const shoulderEdge = (side = 1) => point(start + sx * 7.1 * side, shoulderY - sy * 7.1 * side);
+  const elbowEdge = (side = 1) => point(elbowX + uy * 6.2 * side, elbowY - ux * 6.2 * side);
+  const wristEdge = (side = 1) => point(wristX + uy * 4.2 * side, wristY - ux * 4.2 * side);
+  const centerline = point(elbowX, elbowY);
+  const wrist = point(wristX, wristY);
+  return (
+    <g>
+      <Glass d={"M" + shoulderEdge(1) + "Q" + elbowEdge(1) + " " + wristEdge(1) + "L" + wristEdge(-1) + "Q" + elbowEdge(-1) + " " + shoulderEdge(-1) + "Z"}
+        fill={cloth} width={2.55} />
+      <Glass d={"M" + shoulderEdge(-1) + "Q" + elbowEdge(-1) + " " + wristEdge(-1) + "L" + wrist + "Q" + centerline + " " + point(start, shoulderY + 1) + "Z"}
+        fill={shade} width={1.1} />
+      <g transform={"translate(" + handX + " " + handY + ") rotate(" + Math.atan2(uy, ux) * 180 / Math.PI + ")"}>
+        <Glass d="M-7-4.3-3-4.5-2 3.9-7 4.7Z" fill={lining} width={1.35} />
+        <Glass d="M-2-3.1Q0-5 2-4Q3-3.2 1.9-2.5L5.8-1.5Q7.7.7 5.4 2.9L2.8 4.1-2 3.1Z"
+          fill={skin} width={1.5} />
+        <path d="M2.6-.7 5.4 0M2.1 1.7 4.8 2.2" fill="none" stroke={shade} strokeWidth=".75" strokeLinecap="round" />
+      </g>
+    </g>
+  );
+}
+
+function Trousers({ left = -15, right = 16, dark = "#594060", cloth = "#995e82", rim = "#e4b4a2" }) {
+  return (
+    <>
+      {[left, right].map((foot, index) => {
+        const upper = index ? 6 : -14;
+        const knee = (upper + foot) / 2;
+        return (
+          <g key={index}>
+            <Glass d={"M" + (upper - 6) + " -63H" + (upper + 12) + "Q" + (knee + 11) + " -46 " + (knee + 7) + " -32L" + (foot + 4) + " -12H" + (foot - 5) + "Q" + (knee - 9) + " -31 " + (upper - 6) + " -63Z"}
+              fill={index ? cloth : dark} width={2.45} />
+            <path d={"M" + (upper + 8) + " -53Q" + (knee + 7) + " -41 " + (foot + 1) + " -18"} fill="none" stroke={rim} strokeWidth="1.6" opacity=".77" />
+            <Glass d={"M" + (foot - 5) + " -17L" + (foot + 5) + " -18 " + (foot + 4) + " -7 " + (foot + 12) + " -2 " + (foot + 11) + " 3H" + (foot - 9) + "Z"} fill="#34283e" width={2.35} />
+            <path d={"M" + (foot - 3) + " -13h6"} stroke={rim} strokeWidth="1.2" />
+          </g>
+        );
+      })}
+    </>
+  );
+}
+
+function Skirt({ dark = "#594060", cloth = "#995e82", rim = "#e4b4a2", seated = false }) {
+  const width = seated ? 1.08 : 1;
+  return (
+    <g transform={"scale(" + width + " 1)"}>
+      <Glass d="M-20-74Q-2-79 19-74Q22-50 27-35Q33-18 46-4Q33 7 15 5L3 8-12 5Q-30 8-48-3Q-31-23-20-74Z" fill={cloth} width={3.15} />
+      <Glass d="M-18-71-9-68Q-12-47-18-34Q-22-19-36-7L-43-3-47-4Q-34-31-29-48Z" fill={dark} width={2.05} />
+      <Glass d="M-8-67Q-3-70 4-68L1-43Q4-22-6 4L-16 5-28 2Q-14-19-13-38Z" fill={rim} width={2.05} />
+      <Glass d="M4-65 13-61Q17-41 14-30Q12-13 18 4L3 7-5 5Q3-23 0-43Z" fill={dark} width={2.05} />
+      <Glass d="M16-68Q24-45 26-36Q33-25 45-5L29 2Q19-8 18-25L12-47Z" fill={rim} width={2.05} />
+      <Glass d="M-23-22Q-22-36-16-43L-13-32Q-16-20-22-12Z" fill={cloth} width={1.25} />
+      <Glass d="M17-51Q24-41 25-30L32-13Q25-20 23-26Z" fill={cloth} width={1.25} />
+      <path d="M-41-4Q-28 2-20 0M-5 1 2 4M22 1Q33 1 41-4M-20-47Q-23-29-29-23M21-40 25-25" fill="none" stroke="#edbc93" strokeWidth="1.15" strokeLinecap="round" opacity=".83" />
+    </g>
+  );
+}
+
+function CeremonialMantle({ dark = "#594060", cloth = "#995e82", rim = "#e4b4a2", drop = 0 }) {
+  const top = -108 + drop;
+  const edges = "M-22 " + top + "Q-19 " + (top - 8) + " 0 " + (top - 5) + "Q18 " + (top - 7) + " 23 " + top +
+    "C35 " + (top + 10) + " 36-41 57-16L69 0Q50 10 28 6L0 3-28 6Q-50 10-69 0L-57-16C-37-40-35 " + (top + 11) + "-22 " + top + "Z";
+  return (
+    <g>
+      <Glass d={edges} fill={dark} width={3.4} />
+      {[-1, 1].map((side) => (
+        <g key={side} transform={"scale(" + side + " 1)"}>
+          <Glass d={"M18 " + (top - 1) + "Q32 " + (top + 4) + " 34 " + (top + 19) + "Q43-29 63-2Q54 2 46 2Q29-15 25-43L20 " + (top + 14) + "Z"}
+            fill={cloth} width={2.1} />
+          <Glass d={"M24 " + (top + 7) + "Q36 " + (top + 15) + " 37 " + (top + 27) + "Q47-25 65 0L59 2Q40-16 34-38Z"}
+            fill={rim} width={1.65} />
+          <Glass d={"M32 " + (top + 18) + "Q41-33 54-17L62-3 51 0Q44-13 41-16L37-36Z"}
+            fill={dark} width={1.65} />
+          <path d="M54-2 61 0M43-17 49-9M37-37 41-27" fill="none" stroke="#f2cc91" strokeWidth="1.25" strokeLinecap="round" opacity=".86" />
+          <Glass d="M47-11l3 3-3 4-3-4Z" fill="#ecc181" width={1.15} />
+        </g>
+      ))}
+    </g>
+  );
+}
+
+function TravelCloak({ dark = "#594060", cloth = "#995e82", rim = "#e4b4a2", drop = 0, sweeping = false }) {
+  const shoulder = -108 + drop;
+  const corner = sweeping ? -63 : -48;
+  return (
+    <g>
+      <Glass d={"M-20 " + shoulder + "Q-32 " + (shoulder + 1) + " -36-63Q-38-33 " + corner + " 3Q-36 9-16-2Q2-7 24-1L38-7Q25-28 31-61Q31 " + (shoulder + 11) + " 19 " + shoulder + "Z"} fill={dark} width={2.95} />
+      <Glass d={"M-26 " + (shoulder + 5) + "Q-32 " + (shoulder + 10) + " -30-65Q-35-31 " + (corner + 5) + " 0L-41 1Q-26-21-26-40L-19 " + (shoulder + 13) + "Z"} fill={cloth} width={2.05} />
+      <Glass d={"M-34-43Q-40-17 " + (corner + 3) + "-1L-39 2Q-22-25-26-43Z"} fill={rim} width={1.65} />
+      <Glass d={"M17 " + (shoulder + 4) + "Q32 " + (shoulder + 13) + " 28-60Q24-25 36-9L25-3Q13-27 17-54L13 " + (shoulder + 17) + "Z"} fill={cloth} width={2.15} />
+      <Glass d="M22-46Q18-23 25-5L19-4Q12-21 17-40Z" fill={rim} width={1.7} />
+      <path d={"M-27 " + (shoulder + 15) + "Q-34-47-51-4m11-4 9-26m57 26q-10-17-7-36"} fill="none" stroke="#eab98e" strokeWidth="1.12" opacity=".72" strokeLinecap="round" />
+    </g>
+  );
+}
+
 function Person({
   x = 160, y = 375, size = 1, face = 1, angle = 0, wear = "coral",
-  pose = "still", tone = 0, hat = "hair", eyes = "open",
+  pose = "still", tone = 0, hat = "hair", eyes = "open", dress = false, beard = false,
 }) {
-  const [dark, cloth, rim] = (Object.entries(clothes).find(([name]) => name === wear)?.[1] ?? clothes.coral);
+  const [dark, cloth, rim] = Object.entries(clothes).find(([name]) => name === wear)?.[1] ?? clothes.coral;
   const [skin, shade, hair] = complexions[tone];
-  const { arms, feet, lean, drop } = (Object.entries(poses).find(([name]) => name === pose)?.[1] ?? poses.still);
+  const { arms, feet, lean, drop } = Object.entries(poses).find(([name]) => name === pose)?.[1] ?? poses.still;
   const [left, right] = feet;
+  const longCoat = dress || hat === "hood" || hat === "mitre" || (size >= 1.16 && angle === 0 && pose !== "walk" && pose !== "lift");
+  const royal = hat === "crown" || hat === "mitre" || hat === "flowers";
   return (
-    <g transform={"translate(" + x + " " + y + ") rotate(" + angle + ") scale(" + face * size + " " + size + ")"}>
-      <ellipse cy="2" rx="32" ry="5.5" fill={lead} opacity=".34" />
-      <Glass d={"M-18-53 2-53 5-31 " + (left + 7) + "-5 " + (left - 8) + "-5Z"} fill={dark} width={2.8} />
-      <Glass d={"M3-53 21-57 25-33 " + (right + 7) + "-5 " + (right - 8) + "-5Z"} fill={cloth} width={2.8} />
-      {[left, right].map((foot, index) => (
-        <Glass key={index} d={"M" + (foot - 8) + " -9l14 1 7 7-2 5h-20Z"} fill="#36283d" width={2.1} />
-      ))}
+    <g className="tarot-figure" transform={"translate(" + x + " " + y + ") rotate(" + angle + ") scale(" + face * size + " " + size + ")"}>
+      <ellipse cy="4" rx={longCoat ? 39 : 28} ry="4.6" fill={lead} opacity=".27" />
+      {royal ? <CeremonialMantle dark={dark} cloth={cloth} rim={rim} drop={drop} /> :
+        size >= .84 && angle === 0 && <TravelCloak dark={dark} cloth={cloth} rim={rim} drop={drop} sweeping={pose === "walk" || pose === "dance" || pose === "raise"} />}
+      {longCoat
+        ? <Skirt dark={dark} cloth={cloth} rim={rim} seated={pose === "seated"} />
+        : <Trousers left={left} right={right} dark={dark} cloth={cloth} rim={rim} />}
       <g transform={"translate(" + lean + " " + drop + ")"}>
-        {hat === "hood" && <Glass d="M-27-62Q-31-118-22-136Q-14-158 8-151Q35-141 28-109L33-63 14-69-1-66Z" fill={dark} width={3.3} />}
-        <Glass d="M-17-108-8-115 12-115 22-104Q26-88 22-69L31-47Q11-36-18-41L-29-48-23-79Z"
-          fill={cloth} width={3.5} />
-        <Glass d="M-16-105-3-91-7-77-20-52-29-48-23-79ZM18-93 22-69 31-47 9-43 4-63Z" fill={dark} width={2.2} />
-        <Glass d="M-14-106 0-97 13-107 19-102 0-88-20-101Z" fill={rim} width={2.3} />
-        <Glass d="M-20-67 21-71 24-63-22-59Z" fill={rim} width={2.1} />
-        <Glass d="M-7-118-6-105 3-101 10-108 9-121Z" fill={shade} width={2.2} />
-        {arms.map(([elbowX, elbowY, handX, handY], index) => {
-          const shoulder = index ? 16 : -16;
-          const arm = "M" + shoulder + " -101Q" + elbowX + " " + elbowY + " " + handX + " " + handY;
-          return (
-            <g key={index}>
-              <path d={arm} fill="none" stroke={lead} strokeWidth="15" strokeLinecap="round" />
-              <path d={arm} fill="none" stroke={index ? rim : cloth} strokeWidth="10.2" strokeLinecap="round" />
-              <circle cx={handX} cy={handY} r="5.8" fill={skin} stroke={lead} strokeWidth="2.25" />
-            </g>
-          );
-        })}
-        <Glass d="M-16-134Q-16-151 0-152Q19-150 19-135L19-129 23-125 17-123Q12-114 5-113L-8-117-16-123Z"
-          fill={skin} width={3} />
-        <Glass d="M-16-135Q-17-153 0-153Q15-153 20-140L12-141 8-136-3-139-9-128-17-127Z"
-          fill={hair} width={2.5} />
-        {hat === "hood" && <Glass d="M-25-131Q-27-152-9-158Q9-160 23-142L19-137Q1-151-10-137L-17-122-24-117Z" fill={cloth} width={2.5} />}
-        {hat === "cap" && <Glass d="M-18-140-14-152 6-155 16-147 25-144 21-139Z" fill={rim} width={2.7} />}
-        {hat === "crown" && <Glass d="M-18-145-22-159-10-153-3-163 6-154 17-161 19-144Z" fill="#f8d285" width={2.7} />}
-        {hat === "mitre" && <Glass d="M-17-143-18-157 1-177 19-156 18-143ZM0-167V-149" fill="#f6d7a1" width={2.8} />}
-        {hat === "wrap" && <Glass d="M-19-138Q-17-146-12-151L22-145 22-138Z" fill="#f1e2dc" width={2.4} />}
-        {eyes === "blind" ? <Glass d="M-16-137 20-135 19-127-17-129Z" fill="#ddd1e6" width={2.5} />
-          : <path d={eyes === "closed" ? "M3-132Q9-128 14-132" : "M4-132Q9-136 14-132"} fill="none" stroke="#4d2c40" strokeWidth="2" strokeLinecap="round" />}
-        <path d="M9-121Q13-120 15-122" fill="none" stroke={shade} strokeWidth="1.7" strokeLinecap="round" />
+        {hat === "hood" ? (
+          <Glass d="M-24-63Q-27-79-22-109Q-25-131-15-147Q1-159 16-141Q25-130 23-108L30-76 21-65-3-75Z" fill={dark} width={2.85} />
+        ) : dress && !beard && (
+          <g>
+            <Glass d="M-19-73Q-12-91-14-108Q-21-119-17-136Q-16-150 1-153Q18-152 20-136Q21-125 19-113L24-92Q25-80 31-73Q16-79 8-90L-2-88-8-73Z"
+              fill={hair} width={2.5} />
+            <path d="M-13-137Q-19-127-9-106Q-8-94-14-85M13-139Q19-128 15-116Q14-105 22-91" fill="none" stroke={rim} strokeWidth="1.6" opacity=".53" />
+          </g>
+        )}
+        <Glass d="M-23-103Q-18-114-7-116L8-116Q19-114 24-102Q23-85 21-75L26-55Q15-44 0-47Q-14-43-29-53L-22-76Z"
+          fill={cloth} width={2.9} />
+        <Glass d="M-22-104-15-109-2-94-8-80Q-10-69-19-53L-28-53-22-76Z"
+          fill={dark} width={1.9} />
+        <Glass d="M9-113 21-106 23-96 18-76 25-56 9-50 5-65 9-83 4-94Z"
+          fill={dark} width={1.9} />
+        <Glass d="M-10-112-6-121 8-122 9-111 2-103Z" fill={shade} width={1.9} />
+        <Glass d="M-15-112-4-105 3-101 13-112 19-109 4-91-4-93-21-107Z"
+          fill={rim} width={2.15} />
+        <Glass d="M-7-91 2-88 10-93 7-74 1-70-7-78Z" fill={cloth} width={1.55} />
+        <Glass d="M-18-96-13-95Q-10-85-15-76L-21-73-24-78ZM15-94 20-98 22-89 18-77 12-72 9-76Z" fill={cloth} width={1.45} />
+        <path d="M-17-101Q-21-98-20-90M18-104Q22-97 20-91" stroke="#f3d1a1" fill="none" strokeWidth="1.1" opacity=".77" />
+        <path d="M-15-94-18-81M15-90 12-78M-18-58Q-13-63-11-70M11-71 16-54" fill="none" stroke={rim} strokeWidth="1.25" opacity=".91" strokeLinecap="round" />
+        {royal && (
+          <Glass d="M-24-108Q-17-115-10-115L-5-108-12-97-23-96ZM11-115Q20-113 25-104L22-97 13-98 6-108Z"
+            fill={rim} width={1.65} />
+        )}
+        <Glass d="M-21-71Q0-67 22-72L23-65Q3-58-22-64Z" fill={rim} width={1.8} />
+        <Glass d="M0-70 5-66 0-61-5-65Z" fill="#dba675" width={1.35} />
+        <path d="M-17-65q8 2 12 0m10 0q6-1 13-3M-15-54l7 2m16 0 7-2" fill="none" stroke="#f1c997" strokeWidth="1" opacity=".74" />
+        {longCoat && <>
+          <Glass d="M-21-59Q-8-53 0-56Q14-57 25-62L26-57Q15-50 1-49Q-9-47-23-54Z" fill={dark} width={1.35} />
+          <path d="M-19-55Q-7-50 1-52Q12-53 23-57" fill="none" stroke={rim} strokeWidth="1.05" />
+        </>}
+        <Face skin={skin} shade={shade} hair={hair} metal={hat === "hood" ? cloth : royal ? "#efd095" : rim} hat={hat} eyes={eyes} beard={beard} frontal={royal} />
+        {arms.map(([elbowX, elbowY, handX, handY], index) => (
+          <Sleeve key={index} start={index ? 17 : -17} elbowX={elbowX} elbowY={elbowY} handX={handX} handY={handY}
+            cloth={cloth} shade={dark} lining={rim} skin={skin} />
+        ))}
+        {royal && <Glass d="M3-101 6-97 3-93 0-97Z" fill="#f4d198" width={1.25} />}
       </g>
     </g>
   );
@@ -810,15 +1030,32 @@ function WorkTable({ x = 160, y = 357, size = 1, cloth = false }) {
   );
 }
 
-function Animal({ x = 160, y = 370, size = 1, face = 1, kind = "dog", color = "#ce9e78" }) {
+function Animal({ x = 160, y = 370, size = 1, face = 1, color = "#ce9e78" }) {
   return (
     <g transform={"translate(" + x + " " + y + ") scale(" + face * size + " " + size + ")"}>
-      {kind === "lion" && <Glass d="M-2-69 14-82 29-75 44-78 50-63 63-57 60-42 65-26 52-23 45-9 29-20 12-16 7-32-7-43Z" fill="#a95852" width={4} />}
       <Glass d="M-75-44Q-62-67-47-49L-34-47Q-20-57 0-48L9-58 16-76 25-61 38-66 41-51 57-42 49-31 29-33 23-16 27 1H13L5-22-22-19-27 1H-40L-38-24-47-36Q-60-52-70-37Z"
         fill={color} width={4} />
       <Glass d="M-30-43-1-47 17-35 9-22-22-19-36-25Z" fill="#edbb90" width={2.3} />
       <Glass d="M21-57 37-55 42-48 52-43 48-36 30-39Z" fill="#ead0ab" width={2.2} />
       <path d="M32-51 36-51M50-43 53-42" stroke={lead} strokeWidth="3" strokeLinecap="round" />
+    </g>
+  );
+}
+
+function Lion({ x = 160, y = 370, size = 1, face = 1 }) {
+  return (
+    <g transform={"translate(" + x + " " + y + ") scale(" + face * size + " " + size + ")"}>
+      <Glass d="M-49-32Q-64-46-77-39Q-84-35-82-27Q-68-31-56-19L-51-5-43 7H-30L-33-12-11-11-4 7H10L8-12Q22-16 28-31L20-49-5-54Q-34-55-49-32Z"
+        fill="#d39a68" width={4.1} />
+      <Glass d="M-43-36Q-30-52-7-50L9-30Q-16-17-42-21Z" fill="#edb17a" width={2.7} />
+      <Glass d="M7-70 20-81 34-78 48-71 55-58 54-43 57-29 42-21 34-11 19-20 5-30-2-44-3-55Z"
+        fill="#a4524d" width={4.1} />
+      <Glass d="M7-67 20-77 30-73 21-59 9-48-1-52ZM44-70 53-59 50-46 42-35 36-29 35-13 48-23 57-29 57-40Z"
+        fill="#e18a58" width={2.7} />
+      <Glass d="M12-52Q12-61 22-61L27-55Q40-61 43-50L48-38Q42-29 30-29Q17-32 13-42Z"
+        fill="#eeb27e" width={3.2} />
+      <Glass d="M23-39Q31-44 38-40L46-37Q42-29 30-29Q23-32 23-39Z" fill="#f6cda2" width={2.5} />
+      <path d="M23-47h3m11-1h2m-7 8 5-2 4 2-4 4m-49 13-5 9" stroke={lead} strokeWidth="2.8" fill="none" strokeLinecap="round" />
     </g>
   );
 }
@@ -1092,29 +1329,210 @@ function Bridge({ x = 160, y = 359, size = 1 }) {
   );
 }
 
-function Story({ colors = scenery.dawn, land = "field", sky = "sun", drawing = <g /> }) {
+function WindowTracery({ colors = scenery.dawn }) {
+  return (
+    <g>
+      <path d="M8 330V144Q8 69 160 9Q312 69 312 144V330" fill="none" stroke={colors[4]} strokeWidth="1.15" opacity=".79" />
+      <path d="M28 173V150Q28 86 160 32Q292 86 292 150V173" fill="none" stroke={colors[4]} strokeWidth="1.25" opacity=".77" />
+      {[-1, 1].map((side) => (
+        <g key={side} transform={"translate(160 0) scale(" + side + " 1)"}>
+          <path d="M138 134Q141 177 140 216Q131 250 141 285Q147 329 136 369Q130 399 112 418" fill="none" stroke={lead} strokeWidth="3.8" />
+          <path d="M138 134Q141 177 140 216Q131 250 141 285Q147 329 136 369Q130 399 112 418" fill="none" stroke={colors[3]} strokeWidth="1.5" />
+          {[175, 235, 296, 356].map((y, index) => (
+            <g key={y} transform={"translate(140 " + y + ")"}>
+              <Glass d="M0 0Q-13-7-11-24Q0-18 0 0ZM0 4Q11-5 10-19Q0-14 0 4Z" fill={colors[index % 2 ? 3 : 2]} width={1.5} />
+              <path d="M-7-17-2-6M6-12 2-4" stroke={colors[4]} strokeWidth="1.1" opacity=".68" />
+              <circle cy="5" r="2.3" fill={colors[4]} stroke={lead} strokeWidth="1.1" />
+            </g>
+          ))}
+          <path d="M124 52l4-6 4 6-4 6Zm19 31 5-8 5 8-5 8Z" fill={colors[4]} stroke={lead} strokeWidth="1.7" />
+        </g>
+      ))}
+    </g>
+  );
+}
+
+function ChapelArch({ colors = scenery.dawn }) {
+  const onArch = (inset = 0, t = 0) => {
+    const base = 18 + inset;
+    const end = 160;
+    return [base + (end - base) * t * t, (149 + inset) * (1 - t) ** 2 + 2 * (74 + inset) * t * (1 - t) + (18 + inset) * t * t];
+  };
+  const coord = (point = [0, 0]) => point.map((value) => value.toFixed(2)).join(",");
+  return (
+    <>
+      {[-1, 1].map((side) => (
+        <g key={side} transform={side < 0 ? "translate(320 0) scale(-1 1)" : undefined}>
+          {Array.from({ length: 14 }, (_, index) => {
+            const t = index / 14;
+            const next = (index + 1) / 14;
+            const outline = "M" + coord(onArch(0, t)) + "L" + coord(onArch(0, next)) +
+              "L" + coord(onArch(9, next)) + "L" + coord(onArch(9, t)) + "Z";
+            return <Glass key={index} d={outline} fill={index % 4 === 0 ? colors[4] : index % 2 ? colors[3] : colors[2]} width={1.65} />;
+          })}
+          <path d="M17 382V146H27V382M17 148H27M17 185H27M17 236H27M17 290H27M17 340H27" stroke={lead} strokeWidth="2.2" fill={colors[1]} />
+          <path d="M20 378V153M24 378V153" fill="none" stroke={colors[3]} strokeWidth="1.1" opacity=".75" />
+          <Glass d="M12 150H32L29 157H15ZM14 375H31L34 385H11Z" fill={colors[3]} width={1.7} />
+        </g>
+      ))}
+      <Glass d="M160 19 166 29 160 40 154 29Z" fill={colors[4]} width={1.8} />
+    </>
+  );
+}
+
+function GroundGlass({ land = "field", colors = scenery.dawn }) {
+  if (land === "river" || land === "shore" || land === "harbor") return (
+    <g fill="none" strokeLinecap="round">
+      <path d="M4 417Q55 391 115 398Q92 412 58 421M168 435Q209 403 238 412Q264 417 314 384M18 446Q59 433 104 435M241 438q36-16 65-14" stroke="#223854" strokeWidth="3.2" />
+      <path d="M5 416Q59 395 114 400M172 434Q206 411 233 414M245 437q37-15 59-13" stroke="#b2cfd7" strokeWidth="1.45" opacity=".8" />
+    </g>
+  );
+  if (land === "hall" || land === "room" || land === "forge") return (
+    <g>
+      {Array.from({ length: 7 }, (_, index) => {
+        const x = 23 + index * 45.5;
+        return <Glass key={index} d={"M" + x + " 403l19 11-19 12-19-12Z"} fill={colors[index % 2 ? 1 : 3]} width={1.8} />;
+      })}
+      <path d="M0 402H320M0 427H320" stroke={lead} strokeWidth="1.9" />
+    </g>
+  );
+  return (
+    <g>
+      <Glass d="M0 428Q42 403 78 410L116 397 164 418 197 408 251 412 270 402 320 412V456H0Z" fill="#3e6273" width={2.6} />
+      <Glass d="M0 428 78 410 69 443 12 451ZM78 410 116 397 164 418 117 445 69 443ZM164 418 197 408 251 412 225 442 176 447ZM251 412 270 402 320 412 299 444 225 442Z"
+        fill={colors[1]} width={2.15} />
+      <path d="M39 432 69 422M103 419l20-9m71 19 32-8m43 12 20-13" stroke={colors[3]} strokeWidth="1.3" opacity=".8" strokeLinecap="round" />
+    </g>
+  );
+}
+
+function BorderFoliage() {
+  return (
+    <g>
+      {[-1, 1].map((side, index) => (
+        <g key={side} transform={side < 0 ? "translate(320 0) scale(-1 1)" : undefined}>
+          <path d="M24 439Q42 409 49 397Q55 386 63 381M38 429Q49 426 68 422M35 418Q30 408 30 401" fill="none" stroke={lead} strokeWidth="4.5" />
+          <path d="M24 439Q42 409 49 397Q55 386 63 381M38 429Q49 426 68 422M35 418Q30 408 30 401" fill="none" stroke="#91ad9b" strokeWidth="1.6" />
+          <Glass d="M39 416Q34 403 18 404Q24 415 39 416ZM45 414Q58 404 67 406Q63 417 45 414ZM56 391Q42 388 44 376Q54 378 56 391Z" fill="#668d87" width={1.6} />
+          <Flower x={29} y={399} hue={index ? 2 : 4} size={.65} count={6} />
+          <Flower x={64} y={381} hue={index ? 3 : 1} size={.57} count={7} />
+          <Flower x={69} y={422} hue={index ? 4 : 0} size={.67} count={5} />
+          <Flower x={44} y={433} hue={index ? 1 : 3} size={.52} count={6} />
+        </g>
+      ))}
+    </g>
+  );
+}
+
+const frameMetals = [
+  ["#8d6876", "#e2b68c", "#ffe0a9"],
+  ["#985961", "#e9a17b", "#ffd69f"],
+  ["#5a828e", "#b0cbbe", "#f4dfa8"],
+  ["#746f98", "#b9b8d3", "#e7dfeb"],
+  ["#7f815b", "#c9b782", "#f2da9b"],
+];
+
+function FramingStone({ suit = 0 }) {
+  const [shadow, inlay, glint] = frameMetals[suit];
+  return (
+    <g>
+      {[-1, 1].map((side) => (
+        <g key={side} transform={side < 0 ? "translate(320 0) scale(-1 1)" : undefined}>
+          <Glass d="M5 142Q7 126 24 126L37 143 31 157 28 382 38 407 34 424H5Z" fill="#2e2947" width={2.4} />
+          <Glass d="M8 143 18 132 26 147 21 367 28 397 17 411 9 401Z" fill={shadow} width={1.7} />
+          <Glass d="M15 159 20 156 17 371 22 393 17 398 12 381Z" fill={inlay} width={1.3} />
+          <Glass d="M5 151H34L29 161H5ZM6 374H30L34 390H5Z" fill={shadow} width={1.65} />
+          <path d="M7 155H29M7 380H28M12 176 10 353" fill="none" stroke={glint} strokeWidth="1.15" opacity=".8" />
+          {[179, 243, 311].map((y, index) => (
+            <g key={y} transform={"translate(22 " + y + ")"}>
+              <Glass d="M0-12 9 0 0 12-8 0Z" fill={index === 1 ? glint : inlay} width={1.6} />
+              <path d="M0-8 4 0 0 8-3 0Z" fill={shadow} stroke={lead} strokeWidth="1" />
+            </g>
+          ))}
+        </g>
+      ))}
+      <path d="M29 100Q64 47 160 11Q256 47 291 100M42 113Q70 64 160 28Q250 64 278 113"
+        stroke={lead} strokeWidth="4.1" fill="none" opacity=".95" />
+      <path d="M29 100Q64 47 160 11Q256 47 291 100M42 113Q70 64 160 28Q250 64 278 113"
+        stroke={inlay} strokeWidth="1.35" fill="none" />
+      <Glass d="M154 29 160 19 166 29 160 42Z" fill={glint} width={1.8} />
+    </g>
+  );
+}
+
+function HorizonInlay({ land = "field", colors = scenery.dawn }) {
+  const sea = ["shore", "river", "harbor"].includes(land);
+  const indoors = ["hall", "room", "forge"].includes(land);
+  if (sea) return (
+    <g>
+      <Glass d="M3 342Q63 319 129 345Q196 361 316 329L317 339Q202 374 130 353Q82 335 3 355Z" fill="#7498ac" width={1.75} />
+      <Glass d="M9 377Q54 369 91 373L131 382 96 384Q53 374 9 391ZM181 399Q247 359 305 362L307 375Q258 371 217 395L181 405Z" fill="#557d98" width={1.65} />
+      <path d="M14 357q47-17 82-12m54 27q34 6 73-4m12 35q39-17 72-16M102 410q34-5 63 2" fill="none" stroke="#c6d6d6" strokeWidth="1.4" opacity=".86" />
+    </g>
+  );
+  if (indoors) return (
+    <g opacity=".85">
+      <path d="M73 318v-85q0-67 87-111 86 44 86 111v85" stroke={lead} strokeWidth="4" fill="none" />
+      <path d="M73 318v-85q0-67 87-111 86 44 86 111v85" stroke={colors[3]} strokeWidth="1.25" fill="none" />
+      <path d="M26 345 90 351 160 345 229 351 294 345M30 366l16-8m32 13 20-12m110 8 17 9m38-12 17 9" stroke={colors[4]} strokeWidth="1.2" fill="none" opacity=".55" />
+    </g>
+  );
+  return (
+    <g>
+      <Glass d="M4 297Q54 269 87 279Q117 286 145 301L118 307Q82 291 56 298L4 321Z" fill={colors[2]} width={1.85} />
+      <Glass d="M177 300Q213 278 241 286Q269 286 318 264V284Q270 305 241 302Q212 304 185 324Z" fill={colors[2]} width={1.7} />
+      <path d="M23 309q28-11 52-10m120 16q33-15 61-12m18-9q22-6 36-13" fill="none" stroke={colors[3]} strokeWidth="1.45" opacity=".8" />
+    </g>
+  );
+}
+
+function WindowLight({ mood = "sun", land = "field", cardId = 0, colors = scenery.dawn }) {
+  if (mood !== "sun") return <Sky mood={mood} color={colors[4]} />;
+  const indoor = ["hall", "room", "forge"].includes(land);
+  const coast = ["shore", "river", "harbor", "cliff"].includes(land);
+  const side = cardId % 2 ? 1 : -1;
+  const x = indoor ? 160 : 160 + side * (coast ? 45 : 24 + (cardId % 3) * 9);
+  const y = indoor ? 111 : coast ? 148 : 117 + (cardId % 4) * 8;
+  const radius = indoor ? 34 : 31 + (cardId % 4) * 3;
+  return (
+    <g>
+      <path d={"M160 38Q" + (x - 65) + " " + (y - 12) + " " + x + " " + y +
+        "Q" + (x + 53) + " " + (y - 22) + " 160 38Z"} fill={colors[4]} opacity=".12" />
+      <Sky x={x} y={y} radius={radius} color={coast ? "#f5d6ae" : "#f4cb94"} />
+      {[[-1, 23], [1, 39]].map(([direction, distance]) => (
+        <Glass key={direction} d={"M" + (x + direction * (radius + distance)) + " " + (y - 19) +
+          "l3-6 3 6-3 6Z"} fill={colors[4]} width={1.3} />
+      ))}
+    </g>
+  );
+}
+
+function Story({ colors = scenery.dawn, land = "field", sky = "sun", drawing = <g />, framing = [1, 160, 370, 0, 0], suit = 0, cardId = 0 }) {
   const accent = colors[3];
+  const [zoom, pivotX, pivotY, shiftX, shiftY] = framing;
+  const frame = "translate(" + (pivotX + shiftX) + " " + (pivotY + shiftY) + ") scale(" + zoom + ") translate(" + (-pivotX) + " " + (-pivotY) + ")";
   return (
     <svg className="tarot-art block h-full w-full" viewBox="0 0 320 456" aria-hidden="true">
       <rect width="320" height="456" fill={lead} />
-      <g stroke={lead} strokeWidth="1.85" strokeLinejoin="round">
-        {deckMosaic.map(({ points, band }, index) => <polygon key={index} points={points} fill={colors[band]} />)}
+      <g className="window-panes" stroke={lead} strokeWidth="1.65" strokeLinejoin="round">
+        {glassBands.map((outline, band) => <path key={band} d={outline} fill={colors[band]} />)}
       </g>
-      <Sky mood={sky} color={sky === "sun" ? "#ffdda0" : colors[4]} />
+      <path d={facetHighlights} stroke={colors[4]} fill="none" strokeWidth="1.15" opacity=".23" strokeLinecap="round" />
+      {sky !== "rainbow" && <WindowLight mood={sky} land={land} colors={colors} cardId={cardId} />}
       <Landscape place={land} tint={colors} />
-      <path d="M18 422V147Q18 75 160 18Q302 75 302 147V422" fill="none" stroke={lead} strokeWidth="8" />
-      <path d="M18 422V147Q18 75 160 18Q302 75 302 147V422" fill="none" stroke={accent} strokeWidth="2.5" />
-      <path d="M28 407V150Q28 86 160 32Q292 86 292 150V407" fill="none" stroke={lead} strokeWidth="2.7" />
+      <HorizonInlay land={land} colors={colors} />
+      <GroundGlass land={land} colors={colors} />
+      <ChapelArch colors={colors} />
       <path d="M11 103V15H70M250 15H309V103M11 386V444H67M253 444H309V386" fill="none" stroke={colors[4]} strokeWidth="1.4" opacity=".86" />
-      <Flower x={32} y={47} size={.82} hue={1} count={7} ring />
-      <Flower x={288} y={47} size={.82} hue={3} count={7} ring />
-      <g className="scene-art">{drawing}</g>
-      <g opacity=".93">
-        <Bloom x={31} y={427} size={.68} hue={4} />
-        <Bloom x={50} y={429} size={.48} hue={2} />
-        <Bloom x={287} y={427} size={.68} hue={1} />
-        <Bloom x={267} y={429} size={.51} hue={3} />
+      <WindowTracery colors={colors} />
+      <FramingStone suit={suit} />
+      <Flower x={32} y={47} size={.96} hue={1} count={8} ring />
+      <Flower x={288} y={47} size={.96} hue={3} count={8} ring />
+      <g className="scene-art" transform={frame}>
+        {sky === "rainbow" && <Sky mood="rainbow" />}
+        {drawing}
       </g>
+      <BorderFoliage />
       <path d="M15 434Q84 407 160 434Q238 407 305 434" fill="none" stroke={lead} strokeWidth="3.9" />
       <path d="M15 434Q84 407 160 434Q238 407 305 434" fill="none" stroke={accent} strokeWidth="1.35" />
     </svg>
@@ -1177,7 +1595,7 @@ function KnightInScene({ group = 1 }) {
 }
 
 const arcanaScenes = [
-  { colors: scenery.dawn, land: "cliff", sky: "sun", drawing: <>
+  { framing: [1.27, 138, 342, 8, 14], colors: scenery.dawn, land: "cliff", sky: "sun", drawing: <>
     <Bird x={245} y={173} size={.56} flight />
     <path d="M96 295 209 191" stroke={lead} strokeWidth="9" strokeLinecap="round" />
     <path d="M96 295 209 191" stroke="#e7b58b" strokeWidth="4.5" strokeLinecap="round" />
@@ -1186,7 +1604,7 @@ const arcanaScenes = [
     <Animal x={67} y={350} size={.55} color="#e7d3bc" />
     <Bloom x={180} y={343} size={.54} hue={0} />
   </> },
-  { colors: scenery.rose, land: "hall", sky: "stars", drawing: <>
+  { framing: [1.24, 154, 355, 0, 12], colors: scenery.rose, land: "hall", sky: "stars", drawing: <>
     <Ribbon d="M97 129C76 88 126 90 160 123S239 157 228 118 190 91 160 123 87 155 97 129Z" color="#efbc98" width={5} />
     <Person x={148} y={352} size={1.4} wear="coral" pose="point" tone={2} />
     <Prop group={1} x={239} y={147} size={.91} tilt={10} />
@@ -1197,37 +1615,37 @@ const arcanaScenes = [
     <Prop group={1} x={135} y={320} size={.76} tilt={82} />
   </> },
   null,
-  { colors: scenery.grove, land: "garden", sky: "sun", drawing: <>
-    <Seat x={160} y={373} size={1.38} />
-    <Person x={160} y={365} size={1.47} wear="coral" pose="seated" hat="crown" tone={1} />
-    <Heart x={161} y={260} size={.29} />
+  { framing: [1.13, 158, 390, 0, 6], colors: scenery.grove, land: "garden", sky: "sun", drawing: <>
+    <Seat x={160} y={384} size={1.54} />
+    <Person x={160} y={391} size={1.83} wear="plum" pose="seated" hat="flowers" eyes="closed" tone={1} dress />
+    <Heart x={161} y={266} size={.25} />
     <Bloom x={78} y={374} size={1.31} hue={0} /><Bloom x={109} y={398} size={1.17} hue={3} />
     <Bloom x={222} y={386} size={1.28} hue={4} /><Bloom x={252} y={368} size={1.07} hue={0} />
     <Glass d="M128 372Q160 358 195 372L184 397Q158 407 138 396Z" fill="#b77564" width={3.1} />
     {[[138, 371], [161, 369], [184, 373]].map(([x, y]) => <circle key={x} cx={x} cy={y} r="8" fill="#f5a178" stroke={lead} strokeWidth="2.4" />)}
   </> },
-  { colors: scenery.ember, land: "hall", sky: "none", drawing: <>
+  { framing: [1.1, 161, 386, 0, 7], colors: scenery.ember, land: "hall", sky: "none", drawing: <>
     <House x={54} y={335} size={.55} tower /><House x={266} y={335} size={.55} tower />
-    <Seat x={160} y={376} size={1.55} />
-    <Person x={161} y={369} size={1.65} wear="coral" pose="seated" hat="crown" tone={3} />
+    <Seat x={160} y={380} size={1.57} />
+    <Person x={161} y={384} size={1.78} wear="coral" pose="seated" hat="crown" tone={3} beard dress />
     <Prop group={1} x={210} y={271} size={1.16} />
     <Glass d="M111 358 143 360 138 382 126 390 113 378Z" fill="#f2bb84" width={4} />
   </> },
-  { colors: scenery.chapel, land: "hall", sky: "none", drawing: <>
+  { framing: [1.16, 160, 357, 0, 9], colors: scenery.chapel, land: "hall", sky: "none", drawing: <>
     <GemWindow x={160} y={198} size={1.04} />
-    <Person x={159} y={339} size={1.25} wear="ivory" pose="point" hat="mitre" tone={3} />
+    <Person x={159} y={339} size={1.25} wear="ivory" pose="point" hat="mitre" tone={3} dress />
     <Person x={77} y={381} size={.95} wear="teal" pose="kneel" tone={2} />
     <Person x={244} y={381} size={.95} wear="plum" pose="kneel" face={-1} tone={1} />
     <Book x={153} y={323} size={.79} />
   </> },
-  { colors: scenery.rose, land: "garden", sky: "sun", drawing: <>
+  { framing: [1.08, 160, 370, 0, 8], colors: scenery.rose, land: "garden", sky: "sun", drawing: <>
     <Ribbon d="M55 223Q88 157 160 166Q244 158 266 219" color="#d9b483" width={5} />
     <Heart x={160} y={180} size={.74} />
-    <Person x={90} y={377} size={1.27} wear="coral" pose="offer" tone={1} />
+    <Person x={90} y={377} size={1.27} wear="coral" pose="offer" tone={1} dress />
     <Person x={230} y={377} size={1.27} wear="indigo" pose="offer" face={-1} tone={3} />
     <Bloom x={159} y={389} size={1.15} hue={4} /><Bloom x={140} y={404} size={.62} hue={0} />
   </> },
-  { colors: scenery.frost, land: "path", sky: "stars", drawing: <>
+  { framing: [1.11, 157, 352, 0, 14], colors: scenery.frost, land: "path", sky: "stars", drawing: <>
     <Glass d="M74 276H241L218 346H95Z" fill="#874b67" width={4.8} />
     <Glass d="M88 263H225L242 285H73Z" fill="#e6b797" width={3.3} />
     <Wheel x={103} y={351} size={.64} /><Wheel x={225} y={351} size={.64} />
@@ -1236,20 +1654,20 @@ const arcanaScenes = [
     <TeamHorse x={207} y={363} size={1.04} />
     <path d="M158 229Q129 280 78 324M166 229Q194 283 244 323" fill="none" stroke="#e7c394" strokeWidth="3" />
   </> },
-  { colors: scenery.gold, land: "field", sky: "sun", drawing: <>
-    <Animal x={194} y={362} size={1.23} face={-1} kind="lion" color="#db9a68" />
-    <Person x={106} y={354} size={1.27} wear="ivory" pose="offer" tone={2} />
+  { framing: [1.17, 150, 359, 0, 10], colors: scenery.gold, land: "field", sky: "sun", drawing: <>
+    <Lion x={207} y={365} size={1.13} face={-1} />
+    <Person x={88} y={354} size={1.26} wear="ivory" pose="bend" tone={2} dress />
     <Ribbon d="M99 164C74 150 78 129 101 140S134 168 151 153 151 130 134 140 113 155 99 164Z" color="#fbd49e" width={4.4} />
     <Bloom x={58} y={390} size={.83} hue={0} /><Bloom x={259} y={379} size={1.14} hue={3} />
   </> },
-  { colors: scenery.moon, land: "cliff", sky: "moon", drawing: <>
+  { framing: [1.28, 143, 340, 10, 16], colors: scenery.moon, land: "cliff", sky: "moon", drawing: <>
     <Tree x={264} y={348} size={.72} evergreen />
-    <Person x={108} y={345} size={1.43} wear="dusk" pose="offer" hat="hood" tone={3} />
+    <Person x={108} y={345} size={1.43} wear="dusk" pose="offer" hat="hood" tone={3} beard dress />
     <Lantern x={199} y={244} size={.92} />
     <Prop group={1} x={61} y={304} size={1.28} tilt={-8} />
     <Glass d="M42 368 78 360 101 377 35 382Z" fill="#c0b9cf" width={2.6} />
   </> },
-  { colors: scenery.chapel, land: "field", sky: "stars", drawing: <>
+  { framing: [1.19, 160, 245, 0, 13], colors: scenery.chapel, land: "field", sky: "stars", drawing: <>
     <Tree x={56} y={319} size={.88} />
     <Tree x={260} y={315} size={.91} autumn />
     <Wheel x={160} y={239} size={1.63} ornate />
@@ -1257,14 +1675,14 @@ const arcanaScenes = [
     <path d="M53 213Q61 152 126 130L117 145M266 267Q249 329 191 346L201 331" stroke="#efd2a2" strokeWidth="3.6" fill="none" strokeLinejoin="round" />
     <Bloom x={89} y={377} size={1.11} hue={2} /><Bloom x={228} y={379} size={1.1} hue={0} />
   </> },
-  { colors: scenery.chapel, land: "hall", sky: "none", drawing: <>
+  { framing: [1.17, 154, 367, 1, 11], colors: scenery.chapel, land: "hall", sky: "none", drawing: <>
     <GemWindow x={160} y={192} size={.94} />
     <Seat x={160} y={379} size={1.1} />
-    <Person x={147} y={370} size={1.41} wear="coral" pose="offer" tone={1} hat="crown" />
+    <Person x={147} y={370} size={1.41} wear="coral" pose="offer" tone={1} hat="crown" dress />
     <Scales x={235} y={249} size={.96} />
     <Prop group={3} x={96} y={286} size={1.4} />
   </> },
-  { colors: scenery.grove, land: "woods", sky: "none", drawing: <>
+  { framing: [1.12, 156, 237, 0, 13], colors: scenery.grove, land: "woods", sky: "none", drawing: <>
     <Glass d="M68 322 68 152 48 120 58 106 83 133Q154 116 223 128L253 115 263 129 235 148 88 156 82 322Z" fill="#936665" width={4.3} />
     <path d="M153 145V204" stroke={lead} strokeWidth="7.6" />
     <path d="M153 145V204" stroke="#e9c08e" strokeWidth="3.4" />
@@ -1272,23 +1690,27 @@ const arcanaScenes = [
     <Person x={153} y={189} size={1.11} angle={180} wear="coral" pose="pray" eyes="closed" />
     <Bloom x={102} y={388} size={.88} hue={0} /><Bloom x={229} y={383} size={.97} hue={2} />
   </> },
-  { colors: scenery.moon, land: "path", sky: "sun", drawing: <>
-    <Glass d="M108 337V240Q108 184 163 161Q216 183 220 240V337H203V241Q201 199 163 181Q126 198 125 241V337Z" fill="#ad8ea1" width={4.1} />
-    <Person x={155} y={367} size={1.28} wear="dusk" pose="offer" hat="hood" tone={3} />
-    <Flag x={210} y={365} size={.88} color="#5f507e" />
+  { framing: [1.21, 157, 354, 1, 17], colors: scenery.moon, land: "path", sky: "sun", drawing: <>
+    <Glass d="M121 338V233Q123 201 163 169Q210 193 216 233V338Z" fill="#e7a481" width={3.3} />
+    <Glass d="M150 337Q174 313 171 284L178 248 206 228Q215 271 211 337Z" fill="#ffe0ad" width={3.1} />
+    <Glass d="M108 341V240Q108 184 163 161Q216 183 220 240V341H203V241Q201 199 163 181Q126 198 125 241V341Z" fill="#b5a0bc" width={4.1} />
+    <Glass d="M126 333V239Q128 214 155 195V324Z" fill="#745674" width={3.1} />
+    <path d="M162 321Q193 300 201 269M165 304Q178 275 178 248" fill="none" stroke="#fff2c4" strokeWidth="2.8" strokeLinecap="round" />
+    <Person x={118} y={369} size={1.22} wear="dusk" pose="walk" hat="hood" tone={3} dress />
+    <Flag x={229} y={371} size={.75} color="#ad6889" />
     <Bloom x={215} y={297} size={.77} hue={3} />
     <Bloom x={87} y={389} size={1.15} hue={4} />
     <Glass d="M233 196Q213 174 224 158Q242 153 239 178Q253 155 269 162Q275 179 243 200L239 209Z" fill="#f2caa3" width={3} />
   </> },
-  { colors: scenery.sea, land: "shore", sky: "sun", drawing: <>
+  { framing: [1.1, 158, 357, 0, 13], colors: scenery.sea, land: "shore", sky: "sun", drawing: <>
     <Wings x={156} y={233} size={.94} />
-    <Person x={156} y={367} size={1.32} wear="ivory" pose="hold" tone={3} />
+    <Person x={156} y={367} size={1.32} wear="ivory" pose="hold" tone={3} dress />
     <Ribbon d="M130 257Q154 278 187 283" color="#90d4d4" width={7} />
     <Pitcher x={126} y={248} size={.66} tilt={106} />
     <Pitcher x={193} y={283} size={.66} tilt={-22} />
     <Bloom x={68} y={377} size={.91} hue={1} />
   </> },
-  { colors: scenery.ember, land: "hall", sky: "none", drawing: <>
+  { framing: [1.08, 159, 343, 0, 18], colors: scenery.ember, land: "hall", sky: "none", drawing: <>
     <Wings x={161} y={211} size={1.02} dark />
     <Person x={160} y={320} size={1.31} wear="dusk" pose="guard" tone={2} />
     <Glass d="M140 129Q115 117 120 93Q124 114 150 118L159 128ZM179 129Q205 117 200 93Q194 111 170 118L161 128Z" fill="#e3a098" width={3.3} />
@@ -1296,22 +1718,22 @@ const arcanaScenes = [
     <Person x={240} y={377} size={.81} wear="coral" pose="offer" face={-1} />
     <Chain y={324} count={7} open />
   </> },
-  { colors: scenery.storm, land: "cliff", sky: "storm", drawing: <>
+  { framing: [1.17, 162, 345, 0, 9], colors: scenery.storm, land: "cliff", sky: "storm", drawing: <>
     <House x={150} y={357} size={1.55} tower lit={false} />
     <Glass d="M254 90 191 181 218 174 169 248 184 193 151 204 210 102Z" fill="#ffe2a2" width={4.4} />
     <Glass d="M149 181 137 154 152 146 164 155 176 136 189 146 181 178 166 187Z" fill="#eeb477" width={3.3} />
     <Glass d="M105 219 88 203 79 214 95 236ZM204 257 221 241 235 250 223 274ZM84 276 103 267 109 282 98 296Z" fill="#f29d8d" width={3.4} />
     <path d="M125 209 136 232 123 253 138 269 130 294M171 231 151 253 163 283 146 299" stroke={lead} strokeWidth="4.3" fill="none" />
   </> },
-  { colors: scenery.sea, land: "shore", sky: "stars", drawing: <>
-    <Person x={117} y={370} size={1.37} wear="teal" pose="kneel" tone={1} />
+  { framing: [1.21, 149, 355, 6, 11], colors: scenery.sea, land: "shore", sky: "stars", drawing: <>
+    <Person x={117} y={370} size={1.37} wear="teal" pose="kneel" tone={1} dress />
     <Ribbon d="M198 288Q229 303 219 330T223 370" width={8.2} />
     <Ribbon d="M158 320Q165 338 155 360T173 397" width={6.2} />
     <Pitcher x={187} y={286} size={.66} tilt={103} />
     <Pitcher x={153} y={318} size={.56} tilt={110} />
     <Bird x={73} y={234} size={.63} flight />
   </> },
-  { colors: scenery.moon, land: "path", sky: "moon", drawing: <>
+  { framing: [1.09, 160, 312, 0, 9], colors: scenery.moon, land: "path", sky: "moon", drawing: <>
     <House x={56} y={333} size={.95} tower lit={false} />
     <House x={265} y={332} size={.9} tower lit={false} />
     <Animal x={103} y={365} size={.72} color="#b8adc9" />
@@ -1319,14 +1741,14 @@ const arcanaScenes = [
     <Glass d="M128 400Q163 389 199 399L177 433 149 432Z" fill="#5b82a4" width={3.5} />
     <path d="M137 407Q163 400 184 405M151 420Q164 415 177 419" fill="none" stroke="#d1cad9" strokeWidth="2.6" />
   </> },
-  { colors: scenery.gold, land: "garden", sky: "none", drawing: <>
+  { framing: [1.11, 155, 314, 0, 5], colors: scenery.gold, land: "garden", sky: "none", drawing: <>
     <Sky y={139} radius={63} />
     <Person x={158} y={366} size={1.2} wear="gold" pose="raise" tone={2} />
     <Person x={100} y={380} size={.7} wear="coral" pose="dance" />
     <Animal x={219} y={379} size={.63} color="#ede1d3" />
     {[65, 106, 208, 257].map((x, index) => <Bloom key={x} x={x} y={397 - (index % 2) * 5} size={1.11} hue={3} />)}
   </> },
-  { colors: scenery.dawn, land: "river", sky: "sun", drawing: <>
+  { framing: [1.08, 159, 319, 0, 9], colors: scenery.dawn, land: "river", sky: "sun", drawing: <>
     <Wings x={153} y={217} size={.91} />
     <Person x={148} y={269} size={.84} wear="ivory" pose="play" tone={1} />
     <g transform="translate(201 180) rotate(-13)">
@@ -1338,7 +1760,7 @@ const arcanaScenes = [
     <Person x={159} y={389} size={.74} wear="teal" pose="raise" tone={2} />
     <Person x={242} y={372} size={.7} wear="plum" pose="raise" />
   </> },
-  { colors: scenery.grove, land: "field", sky: "stars", drawing: <>
+  { framing: [1.16, 160, 263, 0, 10], colors: scenery.grove, land: "field", sky: "stars", drawing: <>
     <ellipse cx="160" cy="237" rx="93" ry="126" fill="#376467" stroke={lead} strokeWidth="6" />
     <ellipse cx="160" cy="237" rx="83" ry="114" fill="none" stroke="#dbbd87" strokeWidth="3.4" />
     {Array.from({ length: 16 }, (_, index) => {
@@ -1403,27 +1825,113 @@ function GardenCoins({ points = [[160, 226]] }) {
   );
 }
 
+const lookoutPalette = ["#211d40", "#363d67", "#586b99", "#b47b9b", "#f2d5b2"];
+
+function LookoutWand({ x = 48, y = 108, height = 295, lean = 0 }) {
+  return (
+    <g transform={"translate(" + x + " " + y + ") rotate(" + lean + ")"}>
+      <Glass d={"M-6 " + height + " -5 25-9 14 0 0 9 14 5 27 7 " + height + "Z"} fill="#a96851" width={3.1} />
+      <Glass d={"M0 14 4 23 3 " + (height - 6) + " 0 " + (height - 2) + " -1 30Z"} fill="#f0c994" width={1.35} />
+      <Glass d="M-1 39Q-19 31-20 18Q-4 23-1 39ZM2 52Q20 39 21 26Q5 32 2 52Z" fill="#759a7f" width={1.55} />
+      <Glass d="M-4 67H5V77H-4ZM-4 91H5V97H-4Z" fill="#e6ac7c" width={1.3} />
+      <path d={"M-3 14-1 6M2 100V" + (height - 14)} fill="none" stroke="#ffdbab" strokeWidth=".9" opacity=".8" />
+    </g>
+  );
+}
+
+function TwoWandsLookout() {
+  return (
+    <g className="two-wands-lookout">
+      <Sky x={229} y={145} radius={31} color="#f4cd91" />
+      <Glass d="M169 247 210 219 235 197 250 204 274 183 297 214 320 210V270L265 274Z" fill="#765f8d" width={2.4} />
+      <Glass d="M217 216 235 197 247 206 242 215 232 211ZM258 203 274 183 290 205 278 200 271 208Z" fill="#b7a4ba" width={1.65} />
+      <Glass d="M181 271Q222 252 258 253Q286 247 320 256V307Q302 327 250 313Z" fill="#40678f" width={2.5} />
+      <Glass d="M205 275Q244 264 277 271Q257 277 240 285Q222 283 205 275Z" fill="#9dbac7" width={1.6} />
+      <path d="M258 291Q282 284 316 285M250 305Q283 299 307 303M218 268q17-4 31-2" fill="none" stroke="#bdc8d6" strokeWidth="2" opacity=".9" />
+      <House x={281} y={251} size={.37} /><House x={308} y={254} size={.28} />
+      <Bird x={282} y={163} size={.37} flight />
+      <Glass d="M207 299H222V284L243 281V297L262 294V280L282 277V294L300 291V276L320 271V410L269 428 211 400Z" fill="#615477" width={3.1} />
+      <Glass d="M208 322Q256 321 320 302V323Q261 345 210 345Z" fill="#9e84a0" width={2.45} />
+      <Glass d="M208 348 320 326V349L212 370ZM266 372 319 355V376L274 391Z" fill="#756688" width={2.15} />
+      <path d="M245 321v17m48-28v20m-61 24 4 12m47-24v16m20 12v15m-74 2 68-15" stroke="#30243f" strokeWidth="2.2" fill="none" />
+
+      <LookoutWand x={53} y={112} height={299} lean={-2} />
+      <LookoutWand x={268} y={172} height={229} lean={6} />
+      <Glass d="M246 325l19-8 6 11-21 9ZM244 355l22-8 4 10-22 9Z" fill="#e3ab79" width={1.9} />
+
+      {/* The adult traveler is drawn at the scale of the window, with the horizon off to one side. */}
+      <Glass d="M126 151Q111 151 99 174C86 201 89 233 78 268C68 307 71 350 48 397Q72 421 113 418Q142 436 166 424Q201 436 233 414Q252 422 265 405C240 369 236 329 233 291C230 235 213 182 177 160L165 154Z" fill="#43283e" width={4.7} />
+      <Glass d="M127 157Q104 167 97 201C89 236 93 269 82 308Q76 370 50 397L73 410Q111 365 109 321Q113 277 123 235Z" fill="#96334d" width={3.4} />
+      <Glass d="M121 165Q110 200 111 240Q101 266 103 306Q92 373 73 410L96 420Q126 379 130 329L139 240 147 173Z" fill="#c64c55" width={3.1} />
+      <Glass d="M132 183Q125 215 126 249Q115 292 116 336L97 420Q114 416 124 426Q148 381 145 337Q161 278 154 228Z" fill="#ed7c66" width={3.1} />
+      <Glass d="M170 156Q197 169 211 204Q229 246 233 290Q231 362 264 405L247 416Q213 363 211 317L183 233Z" fill="#8c324e" width={3.2} />
+      <Glass d="M178 175Q197 194 202 225Q217 261 217 310Q214 364 245 416L226 416 205 428Q182 389 180 353Q180 311 167 283L153 208Z" fill="#d55a5c" width={3.05} />
+      <Glass d="M154 184 176 189Q179 220 197 247Q189 279 179 298Q167 343 191 425Q159 438 123 425L136 350Q140 319 129 299Q147 258 144 237Z" fill="#42456d" width={3.25} />
+      <Glass d="M155 193 167 194 168 235 155 266 165 309 153 345 161 429 144 430 137 426 146 359 144 317 137 299 151 260 145 228Z" fill="#7082ab" width={2.9} />
+      <Glass d="M171 279 176 300 168 335 177 367 174 405 181 427 162 431 154 346 164 302Z" fill="#555985" width={2.65} />
+      <path d="M109 248Q102 271 99 286M103 327Q96 377 78 402M193 311Q197 363 212 393M123 386l-8 26m54-69 5 25" fill="none" stroke="#ecaa86" strokeWidth="1.65" opacity=".86" strokeLinecap="round" />
+      <path d="M82 404Q110 365 116 327M223 401Q212 374 208 338" fill="none" stroke="#ffc499" strokeWidth="1.1" opacity=".82" />
+
+      <Glass d="M108 137Q102 107 118 86Q138 65 165 79Q182 87 186 111Q192 133 205 157L181 157 163 170 133 158 104 164Z" fill="#31304d" width={3.75} />
+      <Glass d="M115 98Q133 72 154 81Q143 101 122 114L121 139 104 158 109 133Z" fill="#8b809d" width={2.7} />
+      <Glass d="M160 85Q180 90 185 109Q189 142 202 154L184 151 172 137 167 116Z" fill="#5e6184" width={2.45} />
+      <Glass d="M132 126Q135 143 125 153Q141 168 161 177Q168 162 175 153Q163 148 166 130Z" fill="#bd7e83" width={2.65} />
+      <Glass d="M122 103Q129 89 146 89Q167 92 173 111L175 117 184 126 173 132Q168 147 156 151Q142 146 134 136L125 123Z" fill="#edbfa9" width={2.65} />
+      <Glass d="M123 107Q136 104 141 114L139 131Q143 143 156 150Q142 147 134 136L125 123Z" fill="#cf9290" width={1.7} />
+      <Glass d="M111 104Q116 79 138 80Q151 76 165 90L171 104Q159 96 153 98Q143 113 133 118L127 128 119 123 121 108Z" fill="#494565" width={2.8} />
+      <path d="M117 103Q128 85 146 86M120 113Q132 107 139 100M165 100Q171 106 172 113" fill="none" stroke="#bcb0c5" strokeWidth="1.2" opacity=".92" />
+      <path d="M148 112Q154 109 160 112M163 113Q166 111 170 113M148 117Q153 120 159 117M163 118Q167 120 171 117" fill="none" stroke="#553447" strokeWidth="1.55" strokeLinecap="round" />
+      <path d="M161 116 163 125 168 125M156 136Q162 138 168 134" fill="none" stroke="#a56870" strokeWidth="1.55" strokeLinecap="round" />
+      <Glass d="M127 131 129 135 126 141 123 136Z" fill="#edc689" width={1.25} />
+      <Glass d="M123 148Q141 164 153 167Q168 158 175 151L186 161Q170 184 153 191Q134 181 112 160Z" fill="#f1bd84" width={2.8} />
+      <Glass d="M119 155Q136 173 153 178Q168 170 179 156L182 162Q167 183 153 188Q133 180 116 162Z" fill="#aa5d6a" width={1.55} />
+      <Glass d="M149 174 156 170 162 179 155 189 148 183Z" fill="#f4ca86" width={1.6} />
+
+      <Glass d="M109 176Q101 175 94 185L79 220 64 211 58 222Q65 244 81 250Q97 248 111 222L124 203Z" fill="#bd4f59" width={3.05} />
+      <Glass d="M106 182Q96 182 92 200L81 230Q72 231 66 219L62 224Q69 243 79 243Q91 237 106 209Z" fill="#e98668" width={2.15} />
+      <Glass d="M65 209 70 217 65 228 58 226 54 218Z" fill="#eab483" width={1.9} />
+      <Glass d="M56 207Q47 201 46 206L48 211Q41 213 46 216L50 221 57 224 62 217Z" fill="#efbca1" width={1.9} />
+      <path d="M49 207l6 4m-7 3 7 4" stroke="#9f636a" fill="none" strokeWidth="1.1" strokeLinecap="round" />
+
+      <Glass d="M176 171Q191 166 203 182Q218 202 212 222L226 241 214 257Q194 254 181 231Q173 217 171 190Z" fill="#c64c57" width={3.25} />
+      <Glass d="M183 176Q197 177 203 194Q211 211 202 225L214 242 209 248Q188 236 185 216L174 190Z" fill="#ee876e" width={2.15} />
+      <Glass d="M214 238 226 240 224 254 214 260 207 252Z" fill="#e9b57d" width={1.9} />
+
+      {/* Parchment laid across the stone ledge, with two hand-traced routes. */}
+      <Glass d="M119 246 138 231 175 238 192 229 230 239 247 231 242 268 250 306 214 298 192 313 166 303 137 314 113 302Z" fill="#f0cfa0" width={3.1} />
+      <Glass d="M120 246 138 232 145 261 137 312 113 302ZM175 239 192 230 201 266 192 313 167 303Z" fill="#ddaf88" width={1.75} />
+      <Glass d="M224 240 244 233 241 270 248 304 229 302 218 271Z" fill="#e8bd89" width={1.6} />
+      <path d="M130 274Q154 258 164 268Q170 280 187 274Q198 266 220 269M156 291q14-24 19-39m12 28q16 2 32 13" fill="none" stroke="#89617a" strokeWidth="1.9" strokeDasharray="3 3" strokeLinecap="round" />
+      <path d="M143 253l5-7 5 7Zm58 36 5-7 5 7Z" fill="#b07b70" stroke="#805d72" strokeWidth="1" />
+      <g transform="translate(221 257)">
+        <circle r="8" fill="#f8dfa8" stroke="#976976" strokeWidth="1.25" />
+        <path d="M0-7 2-2 7 0 2 2 0 7-2 2-7 0-2-2Z" fill="#9e6c78" stroke="#805971" strokeWidth=".65" />
+      </g>
+      <Glass d="M218 243Q225 240 230 245L236 249 232 253 227 250 225 256 219 258 213 253Z" fill="#efbca1" width={1.75} />
+      <path d="M222 248l4 5m1-7 4 5M133 307l-5-8m111-4 5 7" stroke="#9b6266" fill="none" strokeWidth="1.1" strokeLinecap="round" />
+
+      <Flower x={39} y={389} hue={1} size={.83} count={7} />
+      <Flower x={284} y={391} hue={3} size={.68} count={7} />
+    </g>
+  );
+}
+
 const wandsScenes = [
-  { colors: scenery.ember, land: "field", sky: "stars", drawing: <>
+  { framing: [1.21, 160, 257, 0, 9], colors: scenery.ember, land: "field", sky: "stars", drawing: <>
     <Cloud x={78} y={296} size={.87} /><Hand x={143} y={278} size={1.02} />
     <Prop group={1} x={175} y={234} size={2.64} tilt={13} />
     <Sprout x={191} y={199} size={.83} />
     <Glass d="M168 159Q154 136 181 118Q174 142 193 147Q214 162 199 179Q183 189 171 172Z" fill="#f49b6a" width={4} />
     <Glass d="M180 169Q177 155 190 145Q188 160 199 166Q197 179 185 178Z" fill="#ffdeb0" width={2.8} />
   </> },
-  { colors: scenery.dawn, land: "cliff", sky: "sun", drawing: <>
-    <Person x={130} y={341} size={1.35} wear="coral" pose="hold" hat="cap" />
-    <Book x={132} y={241} size={.74} />
-    <Prop group={1} x={65} y={281} size={1.46} tilt={-4} /><Prop group={1} x={185} y={291} size={1.31} tilt={6} />
-    <House x={258} y={286} size={.46} /><Bird x={253} y={188} size={.51} flight />
-  </> },
-  { colors: scenery.gold, land: "shore", sky: "sun", drawing: <>
+  { framing: [1, 160, 370, 0, 0], colors: lookoutPalette, land: "shore", sky: "none", drawing: <TwoWandsLookout /> },
+  { framing: [1.23, 143, 332, 3, 15], colors: scenery.gold, land: "shore", sky: "sun", drawing: <>
     <Boat x={225} y={321} size={.62} sail />
     <Person x={96} y={365} size={1.25} wear="plum" pose="point" face={1} tone={1} />
     <Props group={1} points={[[44, 308, 1.26, -7], [148, 325, 1.13, 7], [66, 276, 1.15, -3]]} />
     <Bird x={229} y={183} size={.56} flight />
   </> },
-  { colors: scenery.rose, land: "garden", sky: "sun", drawing: <>
+  { framing: [1.1, 160, 340, 0, 10], colors: scenery.rose, land: "garden", sky: "sun", drawing: <>
     <Props group={1} points={[[57, 277, 1.94, -5], [111, 279, 1.86, 4], [208, 279, 1.86, -4], [263, 277, 1.94, 5]]} />
     <path d="M45 209Q103 262 160 222Q220 259 275 208" stroke={lead} strokeWidth="8" fill="none" />
     <path d="M45 209Q103 262 160 222Q220 259 275 208" stroke="#aed29d" strokeWidth="3.6" fill="none" />
@@ -1431,7 +1939,7 @@ const wandsScenes = [
     <Person x={122} y={384} size={.86} wear="coral" pose="dance" />
     <Person x={204} y={381} size={.89} wear="teal" pose="dance" face={-1} tone={2} />
   </> },
-  { colors: scenery.ember, land: "field", sky: "none", drawing: <>
+  { framing: [1.12, 157, 350, 0, 8], colors: scenery.ember, land: "field", sky: "none", drawing: <>
     <Person x={70} y={360} size={.92} wear="gold" pose="point" />
     <Person x={120} y={329} size={.76} wear="plum" pose="guard" face={-1} tone={1} />
     <Person x={165} y={355} size={.98} wear="teal" pose="lift" tone={2} />
@@ -1439,7 +1947,7 @@ const wandsScenes = [
     <Person x={210} y={398} size={1} wear="indigo" pose="guard" face={-1} tone={3} />
     <Props group={1} points={[[116, 237, 1.26, 75], [127, 252, 1.33, -55], [175, 230, 1.48, -13], [202, 253, 1.36, 59], [244, 278, 1.32, 39]]} />
   </> },
-  { colors: scenery.gold, land: "path", sky: "sun", drawing: <>
+  { framing: [1.16, 159, 358, 0, 16], colors: scenery.gold, land: "path", sky: "sun", drawing: <>
     <Person x={71} y={375} size={.79} wear="teal" pose="raise" tone={1} />
     <Person x={230} y={367} size={.75} wear="plum" pose="raise" />
     <Person x={153} y={371} size={1.36} wear="coral" pose="offer" hat="crown" tone={2} />
@@ -1447,45 +1955,45 @@ const wandsScenes = [
     <ellipse cx="222" cy="223" rx="24" ry="30" fill="none" stroke="#bad69e" strokeWidth="5" />
     <Props group={1} points={[[62, 273, .95, -9], [92, 246, .86, 9], [139, 321, .68, -16], [242, 268, .87, 11], [258, 312, .96, 7], [202, 334, .83, 13]]} />
   </> },
-  { colors: scenery.ember, land: "cliff", sky: "storm", drawing: <>
+  { framing: [1.17, 145, 337, 4, 12], colors: scenery.ember, land: "cliff", sky: "storm", drawing: <>
     <Glass d="M25 345 75 318 155 314 203 348 169 388 38 384Z" fill="#ad8a85" width={4} />
     <Person x={114} y={336} size={1.29} wear="teal" pose="guard" face={-1} tone={2} />
     <Prop group={1} x={161} y={232} size={1.67} tilt={47} />
     <Props group={1} points={[[116, 366, .86, -44], [144, 377, .94, -31], [171, 378, .99, -18], [199, 369, 1.02, 5], [229, 371, .98, 21], [256, 371, .95, 42]]} />
   </> },
-  { colors: scenery.dawn, land: "river", sky: "none", drawing: <>
+  { framing: [1.14, 160, 236, 1, 12], colors: scenery.dawn, land: "river", sky: "none", drawing: <>
     <Bird x={216} y={128} size={.77} flight /><Bird x={258} y={174} size={.51} flight />
     <path d="M30 140 136 230M60 197 148 272M125 130 239 225M108 302 215 388M197 257 281 331" stroke="#f0cba9" strokeWidth="3.8" strokeLinecap="round" opacity=".78" />
     <Props group={1} points={[[89, 160, 1.28, -51], [136, 172, 1.29, -51], [194, 190, 1.23, -51], [104, 222, 1.21, -51], [165, 230, 1.28, -51], [227, 244, 1.24, -51], [137, 283, 1.23, -51], [212, 310, 1.24, -51]]} />
   </> },
-  { colors: scenery.rose, land: "field", sky: "sun", drawing: <>
+  { framing: [1.1, 163, 359, 0, 12], colors: scenery.rose, land: "field", sky: "sun", drawing: <>
     <Props group={1} points={across(277, 8, 45, 272, 1.3).map(([x,y,size],index) => [x,y + index % 2 * 17,size,(index % 3 - 1) * 4])} />
     <Person x={166} y={377} size={1.42} wear="coral" pose="guard" hat="wrap" tone={1} />
     <Prop group={1} x={106} y={291} size={1.61} tilt={-8} />
   </> },
-  { colors: scenery.ember, land: "village", sky: "sun", drawing: <>
+  { framing: [1.26, 164, 364, 0, 12], colors: scenery.ember, land: "village", sky: "sun", drawing: <>
     <Person x={137} y={382} size={1.3} wear="coral" pose="bend" />
     <Props group={1} points={Array.from({length:10}, (_, index) => [135 + index * 8, 259 + index * 4.5, 1.19, 31 + index * 2.3])} />
     <Ribbon d="M139 262Q180 262 210 294" width={5} color="#d9b687" />
   </> },
-  { colors: scenery.gold, land: "field", sky: "sun", drawing: <>
+  { framing: [1.24, 151, 355, 0, 13], colors: scenery.gold, land: "field", sky: "sun", drawing: <>
     <Person x={126} y={373} size={1.42} wear="coral" pose="offer" tone={1} hat="cap" />
     <Prop group={1} x={209} y={259} size={1.98} tilt={7} />
     <Sprout x={222} y={214} size={.67} />
     <Bloom x={72} y={382} hue={0} /><Glass d="M190 388 221 361 258 372 276 403 220 411Z" fill="#9a7890" width={3.7} />
   </> },
-  { colors: scenery.ember, land: "path", sky: "sun", drawing: <>
+  { framing: [1.04, 159, 325, 0, 18], colors: scenery.ember, land: "path", sky: "sun", drawing: <>
     <Flag x={60} y={344} size={.8} />
     <path d="M31 256Q86 236 122 241M27 273Q72 252 98 253M222 388l52-11m-42 24 48-9" stroke="#f4bd9b" strokeWidth="3.4" fill="none" strokeLinecap="round" />
     <KnightInScene group={1} />
   </> },
-  { colors: scenery.gold, land: "garden", sky: "sun", drawing: <>
-    <Seat x={159} y={378} size={1.2} /><Person x={155} y={375} size={1.48} wear="gold" pose="seated" tone={2} hat="crown" />
+  { framing: [1.13, 158, 376, 0, 12], colors: scenery.gold, land: "garden", sky: "sun", drawing: <>
+    <Seat x={159} y={378} size={1.2} /><Person x={155} y={379} size={1.66} wear="gold" pose="seated" tone={2} hat="crown" dress />
     <Prop group={1} x={220} y={301} size={1.68} /><Bloom x={101} y={332} size={1.23} hue={3} />
     <Animal x={110} y={382} size={.44} color="#5b4667" />
   </> },
-  { colors: scenery.ember, land: "hall", sky: "sun", drawing: <>
-    <Seat x={158} y={355} size={1.29} /><Person x={155} y={352} size={1.44} wear="coral" pose="point" tone={3} hat="crown" />
+  { framing: [1.11, 158, 356, 0, 13], colors: scenery.ember, land: "hall", sky: "sun", drawing: <>
+    <Seat x={158} y={355} size={1.29} /><Person x={155} y={352} size={1.44} wear="coral" pose="point" tone={3} hat="crown" beard dress />
     <Prop group={1} x={245} y={188} size={1.15} tilt={13} />
     <Person x={65} y={377} size={.73} wear="teal" pose="offer" tone={2} />
     <Person x={251} y={380} size={.71} wear="ivory" pose="kneel" face={-1} />
@@ -1494,27 +2002,27 @@ const wandsScenes = [
 ];
 
 const cupsScenes = [
-  { colors: scenery.sea, land: "river", sky: "sun", drawing: <>
+  { framing: [1.22, 156, 259, 3, 5], colors: scenery.sea, land: "river", sky: "sun", drawing: <>
     <Cloud x={77} y={317} size={.84} /><Hand x={137} y={301} size={.94} />
     <Ribbon d="M109 217Q84 256 117 289T119 373M201 218Q232 268 199 299T205 371M160 230Q146 262 163 282T159 374" width={7.1} />
     <Prop group={2} x={160} y={242} size={2.47} />
     <Bird x={162} y={169} size={.67} flight />
   </> },
-  { colors: scenery.rose, land: "garden", sky: "sun", drawing: <>
+  { framing: [1.1, 160, 365, 0, 13], colors: scenery.rose, land: "garden", sky: "sun", drawing: <>
     <Heart x={160} y={169} size={.53} />
     <Person x={90} y={375} size={1.22} wear="coral" pose="offer" tone={2} />
     <Person x={229} y={375} size={1.22} wear="teal" pose="offer" face={-1} tone={1} />
     <Props group={2} points={[[143, 245, .77, -13], [178, 244, .77, 13]]} />
     <Bloom x={160} y={394} size={.89} hue={4} />
   </> },
-  { colors: scenery.dawn, land: "garden", sky: "sun", drawing: <>
-    <Person x={72} y={367} size={.99} wear="coral" pose="dance" tone={1} />
-    <Person x={159} y={358} size={1.13} wear="teal" pose="raise" tone={2} />
-    <Person x={245} y={366} size={.98} wear="plum" pose="dance" face={-1} />
-    <Props group={2} points={[[111, 207, .86, -9], [160, 178, .93], [207, 207, .85, 10]]} />
+  { framing: [1.05, 160, 350, 0, 9], colors: scenery.dawn, land: "garden", sky: "sun", drawing: <>
+    <Person x={72} y={367} size={.99} wear="coral" pose="dance" tone={1} dress />
+    <Person x={159} y={358} size={1.13} wear="teal" pose="toast" tone={2} dress />
+    <Person x={245} y={366} size={.98} wear="plum" pose="dance" face={-1} dress />
+    <Props group={2} points={[[111, 207, .86, -9], [165, 177, .93], [207, 207, .85, 10]]} />
     <Bloom x={110} y={389} hue={4} /><Bloom x={207} y={387} hue={3} />
   </> },
-  { colors: scenery.grove, land: "field", sky: "none", drawing: <>
+  { framing: [1.17, 148, 356, 0, 8], colors: scenery.grove, land: "field", sky: "none", drawing: <>
     <Tree x={105} y={335} size={1.5} />
     <Seat x={103} y={366} size={.8} tall={false} />
     <Person x={103} y={367} size={1.12} wear="dusk" pose="seated" eyes="closed" />
@@ -1522,38 +2030,38 @@ const cupsScenes = [
     <Cloud x={252} y={249} size={.58} /><Hand x={227} y={246} size={.63} turn={180} />
     <Prop group={2} x={205} y={211} size={.88} />
   </> },
-  { colors: scenery.moon, land: "shore", sky: "storm", drawing: <>
+  { framing: [1.17, 148, 347, 5, 12], colors: scenery.moon, land: "shore", sky: "storm", drawing: <>
     <Bridge x={227} y={330} size={.52} />
     <Person x={130} y={352} size={1.43} wear="dusk" pose="rest" hat="hood" tone={1} eyes="closed" />
     <Props group={2} points={[[58, 372, .81, -109], [102, 403, .7, 96], [155, 396, .77, -110], [217, 360, .73], [255, 346, .74]]} />
     <Ribbon d="M52 369Q54 385 69 390M104 395L91 417" width={3.2} />
   </> },
-  { colors: scenery.rose, land: "village", sky: "sun", drawing: <>
+  { framing: [1.13, 158, 359, 0, 12], colors: scenery.rose, land: "village", sky: "sun", drawing: <>
     <Person x={103} y={363} size={1.14} wear="indigo" pose="offer" tone={2} />
     <Person x={224} y={365} size={.83} wear="coral" pose="offer" face={-1} />
     <Props group={2} points={[[147, 253, .97], ...across(373,5,73,244,.65)]} />
     <Flower x={147} y={226} hue={0} size={.85} />
     {[73,116,158,201,244].map((x,index) => <Flower key={x} x={x} y={355} size={.61} hue={index} />)}
   </> },
-  { colors: scenery.chapel, land: "cliff", sky: "none", drawing: <>
+  { framing: [1.14, 160, 229, 0, 17], colors: scenery.chapel, land: "cliff", sky: "none", drawing: <>
     <Cloud x={83} y={169} size={.68} /><Cloud x={207} y={148} size={.84} /><Cloud x={228} y={244} size={.8} />
     <Person x={118} y={344} size={1.18} wear="indigo" pose="point" />
     <Props group={2} points={[[80, 152, .66], [131, 122, .67], [188, 149, .68], [244, 132, .71], [123, 211, .67], [190, 209, .68], [251, 213, .69]]} />
     <Flower x={80} y={126} size={.61} hue={4} /><Heart x={186} y={118} size={.24} />
     <path d={starPath} transform="translate(243 103) scale(1.19)" fill="#ffdbab" />
   </> },
-  { colors: scenery.moon, land: "path", sky: "moon", drawing: <>
+  { framing: [1.1, 161, 345, -1, 12], colors: scenery.moon, land: "path", sky: "moon", drawing: <>
     <Person x={222} y={352} size={1.37} wear="coral" pose="walk" hat="hood" tone={2} />
     <Props group={2} points={[...across(328,3,59,142,.62),...across(373,5,44,169,.58)]} />
     <Prop group={1} x={271} y={301} size={1.18} tilt={6} />
   </> },
-  { colors: scenery.sea, land: "hall", sky: "none", drawing: <>
+  { framing: [1.16, 158, 317, 0, 9], colors: scenery.sea, land: "hall", sky: "none", drawing: <>
     <Glass d="M58 227H262V240H58ZM58 281H262V293H58Z" fill="#ae7d83" width={3.2} />
     <Props group={2} points={[...across(204,5,81,238,.64),...across(261,4,92,228,.62)]} />
     <Seat x={158} y={393} size={1.07} tall={false} />
     <Person x={158} y={385} size={1.04} wear="plum" pose="seated" hat="cap" tone={2} />
   </> },
-  { colors: scenery.sea, land: "shore", sky: "rainbow", drawing: <>
+  { framing: [1.08, 160, 301, 0, 13], colors: scenery.sea, land: "shore", sky: "rainbow", drawing: <>
     <House x={250} y={347} size={.57} />
     <Props group={2} points={Array.from({length:10},(_,index) => [53 + index * 23.5, 235 - 95 * Math.sin(index * Math.PI / 9), .52, index * 2.8 - 12])} />
     <Person x={102} y={363} size={1.01} wear="coral" pose="raise" tone={1} />
@@ -1561,29 +2069,29 @@ const cupsScenes = [
     <Person x={152} y={379} size={.65} wear="gold" pose="dance" />
     <Person x={240} y={386} size={.6} wear="plum" pose="dance" face={-1} />
   </> },
-  { colors: scenery.sea, land: "shore", sky: "sun", drawing: <>
+  { framing: [1.22, 152, 355, 0, 11], colors: scenery.sea, land: "shore", sky: "sun", drawing: <>
     <Person x={127} y={369} size={1.38} wear="teal" pose="offer" hat="cap" />
     <Prop group={2} x={211} y={224} size={1.34} />
     <Glass d="M183 184Q207 162 229 177L245 164 245 189 229 185Q208 202 183 184Z" fill="#e3a691" width={3.8} />
     <path d="M193 184h3M213 177l-5 12" stroke={lead} strokeWidth="2.3" strokeLinecap="round" />
   </> },
-  { colors: scenery.sea, land: "river", sky: "sun", drawing: <>
+  { framing: [1.04, 160, 322, 0, 18], colors: scenery.sea, land: "river", sky: "sun", drawing: <>
     <Bridge y={378} size={1.02} />
     <KnightInScene group={2} />
     <Flower x={56} y={392} hue={2} size={.76} />
   </> },
-  { colors: scenery.sea, land: "shore", sky: "moon", drawing: <>
+  { framing: [1.15, 151, 367, 1, 13], colors: scenery.sea, land: "shore", sky: "moon", drawing: <>
     <Seat x={133} y={372} size={1.24} />
-    <Person x={128} y={362} size={1.47} wear="teal" pose="seated" tone={2} hat="crown" />
+    <Person x={132} y={371} size={1.61} wear="teal" pose="seated" tone={2} hat="crown" dress />
     <Prop group={2} x={186} y={281} size={1.44} />
     <Glass d="M157 247 186 233 214 247 201 255H172Z" fill="#f5cc8d" width={3.4} />
     <path d={starPath} transform="translate(186 224) scale(.88)" fill="#ebcfad" />
     <Bloom x={238} y={399} size={.97} hue={2} />
   </> },
-  { colors: scenery.sea, land: "river", sky: "sun", drawing: <>
+  { framing: [1.12, 156, 358, 0, 13], colors: scenery.sea, land: "river", sky: "sun", drawing: <>
     <Glass d="M68 358 96 330 211 332 255 358 232 387 89 387Z" fill="#a38ca4" width={4} />
     <Seat x={156} y={367} size={1.29} />
-    <Person x={152} y={359} size={1.47} wear="indigo" pose="seated" tone={1} hat="crown" />
+    <Person x={152} y={359} size={1.47} wear="indigo" pose="seated" tone={1} hat="crown" beard dress />
     <Prop group={2} x={200} y={277} size={1.38} />
     <Bird x={253} y={192} size={.54} flight /><Boat x={247} y={323} size={.33} sail />
   </> },
@@ -1591,39 +2099,39 @@ const cupsScenes = [
 
 
 const swordsScenes = [
-  { colors: scenery.frost, land: "cliff", sky: "stars", drawing: <>
+  { framing: [1.24, 163, 230, 0, 11], colors: scenery.frost, land: "cliff", sky: "stars", drawing: <>
     <Cloud x={81} y={337} size={.86} /><Hand x={142} y={304} size={1.05} />
     <Prop group={3} x={172} y={236} size={2.47} />
     <Glass d="M135 163 130 133 151 145 172 122 192 144 213 133 208 163 197 174H145Z" fill="#edc082" width={4} />
     <Glass d="M171 144 181 154 171 166 161 154Z" fill="#ec9fa8" width={2.4} />
     <Bird x={240} y={190} size={.62} flight />
   </> },
-  { colors: scenery.moon, land: "shore", sky: "moon", drawing: <>
+  { framing: [1.15, 159, 350, 0, 9], colors: scenery.moon, land: "shore", sky: "moon", drawing: <>
     <Seat x={160} y={363} size={1.11} tall={false} />
     <Person x={160} y={361} size={1.34} wear="ivory" pose="seated" eyes="blind" face={-1} tone={1} />
     <Props group={3} points={[[132, 286, 1.56, -59], [185, 287, 1.59, 57]]} />
     <path d="M137 292q22-7 41-19" stroke="#e4b5a0" strokeWidth="8" fill="none" strokeLinecap="round" />
   </> },
-  { colors: scenery.storm, land: "field", sky: "storm", drawing: <>
+  { framing: [1.25, 160, 245, 0, 12], colors: scenery.storm, land: "field", sky: "storm", drawing: <>
     <Heart x={160} y={252} size={1.35} cracked />
     <Props group={3} points={[[115, 235, 1.46, 148], [160, 225, 1.62, 180], [205, 235, 1.46, -148]]} />
     <path d="M132 318l-9 16M173 322l-8 21m32-21-8 15" stroke="#ecadde" strokeWidth="2.2" opacity=".7" fill="none" />
   </> },
-  { colors: scenery.chapel, land: "hall", sky: "none", drawing: <>
+  { framing: [1.12, 158, 285, 0, 9], colors: scenery.chapel, land: "hall", sky: "none", drawing: <>
     <GemWindow x={160} y={197} size={.87} />
     <Props group={3} points={across(198,3,111,209,1.09)} />
     <Bed x={160} y={360} size={1.13} />
     <Person x={246} y={330} size={1.03} angle={-88} wear="ivory" pose="pray" tone={3} eyes="closed" />
     <Prop group={3} x={160} y={383} size={1.52} tilt={90} />
   </> },
-  { colors: scenery.frost, land: "shore", sky: "storm", drawing: <>
+  { framing: [1.17, 142, 350, 0, 10], colors: scenery.frost, land: "shore", sky: "storm", drawing: <>
     <Person x={221} y={334} size={.57} wear="indigo" pose="walk" tone={2} />
     <Person x={260} y={325} size={.47} wear="ivory" pose="walk" tone={1} />
     <Props group={3} points={[[174, 365, .94, 71], [229, 373, .91, -73]]} />
     <Person x={103} y={367} size={1.37} wear="plum" pose="offer" face={-1} />
     <Props group={3} points={[[82, 258, 1.32, -24], [116, 255, 1.14, -11], [145, 277, 1.16, 18]]} />
   </> },
-  { colors: scenery.sea, land: "river", sky: "sun", drawing: <>
+  { framing: [1.1, 158, 340, 0, 13], colors: scenery.sea, land: "river", sky: "sun", drawing: <>
     <Person x={113} y={341} size={.91} wear="dusk" pose="seated" face={-1} hat="hood" tone={1} />
     <Person x={182} y={346} size={.68} wear="coral" pose="seated" eyes="closed" />
     <Person x={223} y={337} size={.95} wear="teal" pose="hold" tone={2} />
@@ -1633,52 +2141,52 @@ const swordsScenes = [
     <Boat x={149} y={353} size={1.14} />
     <Bird x={252} y={174} size={.67} flight />
   </> },
-  { colors: scenery.dawn, land: "field", sky: "sun", drawing: <>
+  { framing: [1.15, 158, 355, 0, 10], colors: scenery.dawn, land: "field", sky: "sun", drawing: <>
     <Curtain x={229} y={267} size={.78} />
     <Props group={3} points={[[249, 329, .9, -9], [272, 334, .87, 9]]} />
     <Person x={143} y={376} size={1.29} wear="gold" pose="walk" face={-1} hat="cap" tone={1} />
     <Props group={3} points={Array.from({length:5},(_,index) => [75 + index * 15, 263 + index * 5, 1.16, -39 + index * 7])} />
   </> },
-  { colors: scenery.storm, land: "path", sky: "storm", drawing: <>
+  { framing: [1.08, 160, 335, 0, 13], colors: scenery.storm, land: "path", sky: "storm", drawing: <>
     <Props group={3} points={[[55, 242, 1.09], [87, 223, 1.12, -6], [122, 219, 1.03, -4], [195, 218, 1.1], [229, 223, 1.11, 4], [268, 239, 1.09]]} />
     <Person x={156} y={359} size={1.35} wear="coral" pose="hold" tone={2} eyes="blind" />
     <Ribbon d="M130 262Q154 281 185 272M129 276Q156 290 185 284" width={4.6} color="#eadce5" />
     <Props group={3} points={[[52, 330, 1.23, -8], [268, 335, 1.19, 8]]} />
   </> },
-  { colors: scenery.moon, land: "room", sky: "none", drawing: <>
+  { framing: [1.15, 156, 348, 0, 12], colors: scenery.moon, land: "room", sky: "none", drawing: <>
     <Props group={3} points={Array.from({length:9},(_,index)=>[109+(index>>1)%2*65,140+17.5*index,.82,index%2 ? -90 : 90])} />
     <Bed x={179} y={369} size={1.04} />
     <Person x={120} y={370} size={1.06} wear="ivory" pose="rest" eyes="closed" tone={1} />
     <Book x={219} y={345} size={.57} />
   </> },
-  { colors: scenery.dawn, land: "field", sky: "sun", drawing: <>
+  { framing: [1.11, 155, 337, 0, 10], colors: scenery.dawn, land: "field", sky: "sun", drawing: <>
     <path d="M28 298 290 298" stroke="#f8ba98" strokeWidth="3.7" />
     <Props group={3} points={across(279,10,48,274,.82).map(([x,y,size],index)=>[x,y + (index%3)*9,size,188-(index%3)*8])} />
     <Person x={90} y={367} size={1.14} angle={76} wear="dusk" pose="still" eyes="closed" tone={2} />
     <Bird x={240} y={147} size={.7} flight />
   </> },
-  { colors: scenery.frost, land: "cliff", sky: "storm", drawing: <>
+  { framing: [1.16, 148, 339, 3, 15], colors: scenery.frost, land: "cliff", sky: "storm", drawing: <>
     <Person x={133} y={341} size={1.38} wear="indigo" pose="offer" hat="cap" tone={1} />
     <Prop group={3} x={209} y={188} size={1.61} tilt={13} />
     <Bird x={86} y={155} size={.58} flight /><Bird x={253} y={159} size={.55} flight />
     <path d="M56 265q50-30 77-29m119 33 37-15m-40 36 36-13" stroke="#c4cbe7" strokeWidth="3.2" fill="none" />
   </> },
-  { colors: scenery.frost, land: "cliff", sky: "storm", drawing: <>
+  { framing: [1.04, 160, 322, 0, 18], colors: scenery.frost, land: "cliff", sky: "storm", drawing: <>
     <Prop group={3} x={111} y={174} size={1.23} tilt={-37} />
     <path d="M23 278Q74 248 112 251M26 301Q60 280 99 275M228 338l66-24m-58 52 45-16" stroke="#d7daf0" strokeWidth="3.5" fill="none" />
     <KnightInScene group={3} />
   </> },
-  { colors: scenery.chapel, land: "cliff", sky: "sun", drawing: <>
+  { framing: [1.13, 151, 360, 1, 12], colors: scenery.chapel, land: "cliff", sky: "sun", drawing: <>
     <Seat x={145} y={363} size={1.22} />
-    <Person x={143} y={356} size={1.44} wear="indigo" pose="offer" tone={2} hat="crown" />
+    <Person x={141} y={363} size={1.51} wear="indigo" pose="offer" tone={2} hat="crown" dress />
     <Prop group={3} x={104} y={248} size={1.72} />
     <Bird x={253} y={160} size={.57} flight />
     <Glass d="M108 371 140 357 204 361 217 393 87 402Z" fill="#a0a4c1" width={3.3} />
   </> },
-  { colors: scenery.frost, land: "hall", sky: "none", drawing: <>
+  { framing: [1.12, 160, 362, 0, 13], colors: scenery.frost, land: "hall", sky: "none", drawing: <>
     <GemWindow x={160} y={175} size={.82} />
     <Seat x={160} y={370} size={1.27} />
-    <Person x={161} y={359} size={1.47} wear="dusk" pose="seated" tone={3} hat="crown" />
+    <Person x={161} y={359} size={1.47} wear="dusk" pose="seated" tone={3} hat="crown" beard dress />
     <Prop group={3} x={95} y={259} size={1.66} />
     <WorkTable x={225} y={364} size={.61} /><Scales x={232} y={299} size={.64} />
     <Book x={187} y={333} size={.48} />
@@ -1686,19 +2194,19 @@ const swordsScenes = [
 ];
 
 const pentaclesScenes = [
-  { colors: scenery.grove, land: "garden", sky: "sun", drawing: <>
+  { framing: [1.25, 162, 265, 0, 7], colors: scenery.grove, land: "garden", sky: "sun", drawing: <>
     <Cloud x={71} y={315} size={.83} /><Hand x={148} y={296} size={1.05} />
     <Prop group={4} x={173} y={224} size={2.31} />
     <Sprout x={128} y={393} size={.83} /><Sprout x={193} y={384} size={.98} />
     <Bloom x={239} y={385} hue={3} size={1.03} />
   </> },
-  { colors: scenery.dawn, land: "harbor", sky: "sun", drawing: <>
+  { framing: [1.17, 157, 345, 0, 14], colors: scenery.dawn, land: "harbor", sky: "sun", drawing: <>
     <Boat x={75} y={330} size={.38} sail /><Boat x={244} y={332} size={.45} sail />
     <Person x={161} y={369} size={1.42} wear="teal" pose="dance" hat="cap" tone={1} />
     <Ribbon d="M96 258C52 223 97 202 158 234S268 248 224 216 170 225 158 234 126 277 96 258Z" color="#abd3a8" width={5.2} />
     <Props group={4} points={[[104, 236, .98], [217, 233, .99]]} />
   </> },
-  { colors: scenery.chapel, land: "hall", sky: "none", drawing: <>
+  { framing: [1.12, 158, 350, 0, 11], colors: scenery.chapel, land: "hall", sky: "none", drawing: <>
     <GemWindow x={161} y={214} size={1.2} />
     <Props group={4} points={[[161,143,.66],[132,179,.63],[190,179,.63]]} />
     <Person x={71} y={366} size={.9} wear="gold" pose="point" tone={2} />
@@ -1706,12 +2214,12 @@ const pentaclesScenes = [
     <Person x={155} y={385} size={.95} wear="ivory" pose="hold" tone={1} />
     <Book x={156} y={304} size={.58} /><Glass d="M48 332 81 324 108 337 94 348H45Z" fill="#b7a2aa" width={3.1} />
   </> },
-  { colors: scenery.gold, land: "village", sky: "sun", drawing: <>
+  { framing: [1.19, 160, 361, 0, 13], colors: scenery.gold, land: "village", sky: "sun", drawing: <>
     <Seat x={160} y={374} size={1.04} tall={false} />
     <Person x={158} y={369} size={1.42} wear="gold" pose="hold" tone={1} />
     <Props group={4} points={[[158,146,.81],[162,259,1.19],[126,372,.85],[193,372,.85]]} />
   </> },
-  { colors: scenery.moon, land: "snow", sky: "storm", drawing: <>
+  { framing: [1.12, 164, 344, 0, 13], colors: scenery.moon, land: "snow", sky: "storm", drawing: <>
     <GemWindow x={167} y={211} size={1.35} />
     <Glass d="M106 299 232 299 264 372 75 372Z" fill="#d7b3a2" width={3.1} />
     <Props group={4} points={[[167,133,.59],[136,180,.6],[197,180,.6],[136,230,.6],[197,230,.6]]} />
@@ -1720,20 +2228,20 @@ const pentaclesScenes = [
     <Prop group={1} x={235} y={334} size={.88} tilt={7} />
     <path d="M51 288l0 13m-7-6h14m214-24v14m-7-7h14m-39 44v14m-7-7h14" stroke="#e6e1ed" strokeWidth="2.8" />
   </> },
-  { colors: scenery.grove, land: "hall", sky: "sun", drawing: <>
+  { framing: [1.15, 158, 354, 0, 14], colors: scenery.grove, land: "hall", sky: "sun", drawing: <>
     <Person x={160} y={349} size={1.24} wear="gold" pose="offer" tone={2} />
     <Scales x={226} y={243} size={.82} />
     <Person x={78} y={389} size={.88} wear="dusk" pose="kneel" tone={1} />
     <Person x={241} y={389} size={.85} wear="ivory" pose="kneel" face={-1} />
     <Props group={4} points={[[66,192,.53],[106,170,.55],[207,158,.56],[248,192,.52],[119,279,.44],[130,306,.44]]} />
   </> },
-  { colors: scenery.grove, land: "farm", sky: "sun", drawing: <>
+  { framing: [1.12, 159, 356, 0, 12], colors: scenery.grove, land: "farm", sky: "sun", drawing: <>
     <GardenCoins points={[[92,211,.64],[140,202,.65],[171,231,.62],[108,263,.66],[155,283,.64],[106,321,.63],[170,343,.66]]} />
     <Person x={231} y={374} size={1.22} wear="gold" pose="rest" tone={2} face={-1} hat="cap" />
     <Glass d="M263 254 270 256 250 369 243 368ZM229 370Q243 361 251 370L258 383 233 384Z" fill="#bca4ad" width={3.1} />
     <Sprout x={69} y={390} size={.68} />
   </> },
-  { colors: scenery.gold, land: "forge", sky: "none", drawing: <>
+  { framing: [1.16, 157, 351, 0, 14], colors: scenery.gold, land: "forge", sky: "none", drawing: <>
     <Glass d="M53 144H86V337H53ZM39 154H100V168H39ZM40 325H101V342H40Z" fill="#877086" width={3.2} />
     <Props group={4} points={Array.from({length:7},(_,index)=>[69,153+index*28,.48])} />
     <Person x={168} y={368} size={1.17} wear="gold" pose="bend" tone={1} />
@@ -1741,13 +2249,13 @@ const pentaclesScenes = [
     <Prop group={4} x={232} y={321} size={.75} />
     <Glass d="M220 272 226 279 210 311 202 308ZM213 258 235 270 227 282 205 271Z" fill="#dcba9d" width={3} />
   </> },
-  { colors: scenery.grove, land: "garden", sky: "sun", drawing: <>
+  { framing: [1.1, 162, 353, 0, 12], colors: scenery.grove, land: "garden", sky: "sun", drawing: <>
     <GardenCoins points={[[67,213,.58],[98,185,.64],[141,191,.61],[85,247,.63],[123,238,.65],[88,285,.65],[120,312,.6],[76,326,.61],[114,357,.64]]} />
     <Person x={218} y={377} size={1.35} wear="gold" pose="offer" face={-1} tone={2} />
     <Bird x={150} y={233} size={.65} />
     <Bloom x={239} y={391} size={.94} hue={4} /><Bloom x={270} y={372} size={1.28} hue={3} />
   </> },
-  { colors: scenery.gold, land: "village", sky: "sun", drawing: <>
+  { framing: [1.08, 160, 338, 0, 9], colors: scenery.gold, land: "village", sky: "sun", drawing: <>
     <Glass d="M53 358V245Q53 177 160 132Q267 177 267 245V358H247V245Q247 188 160 152Q73 188 73 245V358Z" fill="#b9897c" width={4.7} />
     <Props group={4} points={[[68,255,.56],[77,219,.55],[99,184,.55],[130,160,.57],[160,148,.58],[190,160,.57],[221,184,.55],[243,219,.55],[252,255,.56],[160,372,.68]]} />
     <Person x={97} y={366} size={.97} wear="dusk" pose="seated" tone={3} />
@@ -1755,29 +2263,29 @@ const pentaclesScenes = [
     <Person x={225} y={385} size={.66} wear="coral" pose="dance" face={-1} tone={2} />
     <Animal x={83} y={395} size={.4} color="#e7ba93" />
   </> },
-  { colors: scenery.grove, land: "farm", sky: "sun", drawing: <>
+  { framing: [1.24, 150, 353, 2, 12], colors: scenery.grove, land: "farm", sky: "sun", drawing: <>
     <Person x={130} y={372} size={1.44} wear="moss" pose="offer" tone={2} hat="cap" />
     <Prop group={4} x={212} y={217} size={1.39} />
     <Sprout x={76} y={379} size={.86} /><Sprout x={234} y={385} size={.89} />
     <Book x={192} y={373} size={.59} />
   </> },
-  { colors: scenery.grove, land: "farm", sky: "sun", drawing: <>
+  { framing: [1.04, 159, 325, 0, 18], colors: scenery.grove, land: "farm", sky: "sun", drawing: <>
     <House x={254} y={324} size={.6} />
     <KnightInScene group={4} />
     <Sprout x={61} y={382} size={.77} /><Sprout x={256} y={392} size={.75} />
   </> },
-  { colors: scenery.grove, land: "garden", sky: "sun", drawing: <>
+  { framing: [1.13, 150, 370, 2, 10], colors: scenery.grove, land: "garden", sky: "sun", drawing: <>
     <Seat x={158} y={370} size={1.31} />
-    <Person x={148} y={363} size={1.5} wear="moss" pose="seated" tone={2} hat="crown" />
+    <Person x={148} y={373} size={1.67} wear="moss" pose="seated" tone={2} hat="crown" dress />
     <Prop group={4} x={160} y={285} size={1.21} />
     <Glass d="M204 355Q225 348 250 356L246 377 228 386 210 378Z" fill="#bd8470" width={3.1} />
     <Sprout x={229} y={363} size={.84} />
     <Animal x={88} y={386} size={.43} color="#c98e75" />
   </> },
-  { colors: scenery.gold, land: "garden", sky: "sun", drawing: <>
+  { framing: [1.13, 160, 365, 0, 13], colors: scenery.gold, land: "garden", sky: "sun", drawing: <>
     <House x={237} y={338} size={.61} tower />
     <Seat x={157} y={370} size={1.31} />
-    <Person x={160} y={362} size={1.5} wear="gold" pose="seated" tone={1} hat="crown" />
+    <Person x={160} y={362} size={1.5} wear="gold" pose="seated" tone={1} hat="crown" beard dress />
     <Prop group={4} x={161} y={284} size={1.2} />
     <Prop group={1} x={218} y={281} size={1.21} />
     <Bloom x={96} y={393} size={1} hue={3} /><Sprout x={235} y={393} size={.69} />
@@ -1789,7 +2297,7 @@ const suitScenes = [wandsScenes, cupsScenes, swordsScenes, pentaclesScenes];
 
 function CardArtwork({ card = deck[2] }) {
   const scene = card.group ? suitScenes[card.group - 1][card.rank] : arcanaScenes[card.rank];
-  return scene ? <Story {...scene} /> : <CardArt />;
+  return scene ? <Story {...scene} suit={card.group} cardId={card.id} /> : <CardArt />;
 }
 
 function useDeviceTilt() {
