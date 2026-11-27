@@ -1,3 +1,5 @@
+import "./globals.css";
+
 export const metadata = {
   title: "ไพ่ทาโรต์",
   description: "เปิดไพ่เพื่อรับคำแนะนำ",
